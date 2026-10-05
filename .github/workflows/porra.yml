@@ -1,0 +1,48 @@
+# Ejecuta la porra cada lunes a las 08:00 hora de España
+name: Porra semanal
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # 08:00 en verano (UTC+2)
+    - cron: "0 7 * * 1"   # 08:00 en invierno (UTC+1)
+  workflow_dispatch:       # botón para lanzarlo a mano desde GitHub
+
+jobs:
+  porra:
+    runs-on: ubuntu-latest
+    steps:
+      # De los dos disparadores, solo seguimos con el que toca según el horario de Madrid.
+      # Comparamos con el cron que lo lanzó (no con la hora real), por si GitHub se retrasa.
+      - name: Comprobar horario de verano/invierno
+        id: hora
+        run: |
+          OFFSET=$(TZ=Europe/Madrid date +%z)
+          CRON="${{ github.event.schedule }}"
+          echo "Offset Madrid: $OFFSET | Disparador: '$CRON' | Evento: ${{ github.event_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] \
+             || { [ "$OFFSET" = "+0200" ] && [ "$CRON" = "0 6 * * 1" ]; } \
+             || { [ "$OFFSET" = "+0100" ] && [ "$CRON" = "0 7 * * 1" ]; }; then
+            echo "seguir=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No es este disparador, salgo."
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.hora.outputs.seguir == 'true'
+
+      - uses: actions/setup-python@v5
+        if: steps.hora.outputs.seguir == 'true'
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        if: steps.hora.outputs.seguir == 'true'
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar porra
+        if: steps.hora.outputs.seguir == 'true'
+        env:
+          FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python porra.py
