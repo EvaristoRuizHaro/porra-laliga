@@ -4,7 +4,7 @@ import csv
 import os
 from datetime import date, timedelta
 
-from modelo import _signo, inicio_temporada
+from modelo import PUNTOS_EXACTO, PUNTOS_SIGNO, inicio_temporada, puntos_porra
 
 ARCHIVO = "historial.csv"
 COLUMNAS = ["id", "fecha", "jornada", "local", "visitante", "pronostico",
@@ -26,12 +26,6 @@ def guardar(filas):
         w.writerows(filas)
 
 
-def _puntos(pronostico, resultado):
-    if pronostico == resultado:
-        return 6
-    return 3 if _signo(*pronostico) == _signo(*resultado) else 0
-
-
 def _marcador(texto):
     a, b = texto.split("-")
     return int(a), int(b)
@@ -44,7 +38,7 @@ def apuntar_resultados(filas, terminados):
         if not f["resultado"] and f["id"] in por_id:
             real = por_id[f["id"]]
             f["resultado"] = f"{real[0]}-{real[1]}"
-            f["puntos"] = _puntos(_marcador(f["pronostico"]), real)
+            f["puntos"] = puntos_porra(_marcador(f["pronostico"]), real)
 
 
 def anadir(filas, nuevas):
@@ -59,8 +53,8 @@ def _balance(filas):
     jugadas = [f for f in filas if f["resultado"]]
     pts = sum(int(f["puntos"]) for f in jugadas)
     return {"n": len(jugadas), "pts": pts,
-            "signos": sum(int(f["puntos"]) >= 3 for f in jugadas),
-            "exactos": sum(int(f["puntos"]) == 6 for f in jugadas),
+            "signos": sum(int(f["puntos"]) >= PUNTOS_SIGNO for f in jugadas),
+            "exactos": sum(int(f["puntos"]) == PUNTOS_EXACTO for f in jugadas),
             "esperados": sum(float(f["puntos_esperados"]) for f in jugadas)}
 
 

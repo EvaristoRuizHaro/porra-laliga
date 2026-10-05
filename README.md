@@ -26,9 +26,9 @@ Sáb 10/10 18:30 (J8)
   💬 Barça parte como favorito en casa (78% de victoria): encaja 1.0 goles por
   partido y Getafe marca 0.6. Las casas de apuestas lo ven parecido (1: 77% |
   X: 16% | 2: 7%). Con 2.5-0.6 goles esperados, el 2-0 es el marcador más
-  probable de ese signo (14%) y da 2.7 puntos esperados.
+  probable de ese signo (14%) y da 3.0 puntos esperados.
 
-📊 Puntos esperados esta semana: 16.6
+📊 Puntos esperados esta semana: 19.1
 💶 Cuotas de las casas en 9/9 partidos
 
 📒 Semana pasada: 21 pts (6/10 signos, 1 exactos; el modelo esperaba 19.8)
@@ -65,10 +65,10 @@ Para cada partido: **marcador recomendado**, **probabilidades 1X2**, **por qué*
 
    | Acierto | Puntos |
    |---|---|
-   | Resultado exacto | 6 |
+   | Resultado exacto | 8 |
    | Solo el signo (1, X, 2) | 3 |
 
-   $$E[\text{puntos}] = 3 \cdot \big(P(\text{signo}) + P(\text{exacto})\big)$$
+   $$E[\text{puntos}] = 8 \cdot P(\text{exacto}) + 3 \cdot P(\text{signo sin exacto}) = 3 \cdot P(\text{signo}) + 5 \cdot P(\text{exacto})$$
 
 6. **Historial.** Cada pronóstico se guarda en `historial.csv`; el lunes siguiente se apunta el resultado real y los puntos.
 
@@ -78,9 +78,9 @@ Para cada partido: **marcador recomendado**, **probabilidades 1X2**, **por qué*
 
 | Versión | Puntos por partido | Signo | Exacto |
 |---|---|---|---|
-| Modelo inicial (solo goles de esta temporada) | 1,88 | 49,7 % | 12,8 % |
-| Modelo nuevo, solo estadísticas | 2,01 | 53,5 % | 13,6 % |
-| Modelo nuevo + cuotas | **2,06** | **54,3 %** | **14,2 %** |
+| Modelo inicial (solo goles de esta temporada) | 2,13 | 49,7 % | 12,8 % |
+| Modelo nuevo, solo estadísticas | 2,29 | 53,3 % | 13,8 % |
+| Modelo nuevo + cuotas | **2,31** | **53,9 %** | **13,9 %** |
 
 En una semana de 10 partidos son ~1,8 puntos más que la versión inicial. Los hiperparámetros (`CONFIG` en `modelo.py`) se ajustaron con 2015-2022 y se validaron con 2022-2026.
 

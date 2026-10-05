@@ -13,7 +13,6 @@ import math
 from datetime import date, timedelta
 
 import numpy as np
-from scipy.optimize import minimize
 
 # Hiperparámetros: ajustados con backtest.py sobre temporadas pasadas de LaLiga
 CONFIG = {
@@ -26,6 +25,10 @@ CONFIG = {
     "ascendido": 0.15,       # a priori de un recién ascendido sin Elo (peor ataque y defensa)
     "peso_mercado": 0.75,    # 0 = solo modelo, 1 = solo cuotas de las casas
 }
+
+# Reglas de la porra
+PUNTOS_EXACTO = 8    # aciertas el resultado exacto
+PUNTOS_SIGNO = 3     # aciertas solo quién gana (o el empate)
 
 MAX_GOLES = 10       # la matriz de marcadores llega hasta 10-10
 MAX_PRONOSTICO = 6   # pero solo pronosticamos hasta 6-6
@@ -109,22 +112,37 @@ def ajustar(partidos, hoy, elo=None, equipos_extra=(), cfg=None):
     ridge = cfg["ridge"]
 
     # --- Máxima verosimilitud de Poisson (con pesos) + penalización hacia el a priori ---
-    def coste(x):
-        base, casa, a, d = x[0], x[1], x[2:2 + n], x[2 + n:]
-        ll = np.exp(base + casa + a[loc] + d[vis])
-        lv = np.exp(base + a[vis] + d[loc])
-        f = np.sum(w * (ll - yl * np.log(ll))) + np.sum(w * (lv - yv * np.log(lv)))
-        f += ridge / 2 * (np.sum((a - pa) ** 2) + np.sum((d - pd) ** 2))
-        rl, rv = w * (ll - yl), w * (lv - yv)   # derivadas
-        g = np.empty_like(x)
-        g[0] = rl.sum() + rv.sum()
-        g[1] = rl.sum()
-        g[2:2 + n] = (np.bincount(loc, rl, n) + np.bincount(vis, rv, n)) + ridge * (a - pa)
-        g[2 + n:] = (np.bincount(vis, rl, n) + np.bincount(loc, rv, n)) + ridge * (d - pd)
-        return f, g
+    # Cada fila de X dice qué parámetros suman en un "log λ":
+    #   columnas = [base, casa, ataque de cada equipo..., defensa de cada equipo...]
+    m = len(usados)
+    filas = np.arange(m)
+    X = np.zeros((2 * m, 2 + 2 * n))
+    X[:, 0] = 1                                                   # base
+    X[:m, 1] = 1                                                  # ventaja de casa (solo local)
+    X[filas, 2 + loc] = X[m + filas, 2 + vis] = 1                 # ataque del que marca
+    X[filas, 2 + n + vis] = X[m + filas, 2 + n + loc] = 1         # defensa del que encaja
+    y, pesos = np.concatenate([yl, yv]), np.concatenate([w, w])
+    priori_x = np.concatenate([[0, 0], pa, pd])
+    penal = np.full(2 + 2 * n, ridge)
+    penal[:2] = 0                                                 # base y casa sin penalizar
 
-    x0 = np.concatenate([[math.log(1.2), 0.2], pa, pd])
-    x = minimize(coste, x0, jac=True, method="L-BFGS-B").x
+    def coste(x):
+        eta = X @ x
+        return np.sum(pesos * (np.exp(eta) - y * eta)) + np.sum(penal / 2 * (x - priori_x) ** 2)
+
+    # Método de Newton: el problema es convexo, así que converge en pocas iteraciones
+    x = np.concatenate([[math.log(1.2), 0.2], pa, pd])
+    for _ in range(100):
+        lam = np.exp(X @ x)
+        gradiente = X.T @ (pesos * (lam - y)) + penal * (x - priori_x)
+        hessiana = (X.T * (pesos * lam)) @ X + np.diag(penal)
+        paso = np.linalg.solve(hessiana, gradiente)
+        t, actual = 1.0, coste(x)
+        while coste(x - t * paso) > actual and t > 1e-6:   # si el paso se pasa, lo acortamos
+            t /= 2
+        x = x - t * paso
+        if np.max(np.abs(t * paso)) < 1e-9:
+            break
     ataque = {e: x[2 + i] for e, i in idx.items()}
     defensa = {e: x[2 + n + i] for e, i in idx.items()}
     return Modelo(x[0], x[1], ataque, defensa, priori)
@@ -167,16 +185,30 @@ def lambdas_mercado(cuotas, rho, inicio=(1.4, 1.1)):
     """Goles esperados que encajan con las cuotas (1X2 y, si hay, más/menos de 2,5)."""
     mercado = probabilidades_mercado(cuotas)
 
-    def error(x):
-        m = matriz(math.exp(x[0]), math.exp(x[1]), rho)
-        e = sum((a - b) ** 2 for a, b in zip(probabilidades_1x2(m), mercado["1x2"]))
-        if "mas25" in mercado:
-            menos = sum(m[a, b] for a in range(3) for b in range(3 - a))
-            e += (1 - menos - mercado["mas25"]) ** 2
-        return e
+    objetivo = list(mercado["1x2"]) + ([mercado["mas25"]] if "mas25" in mercado else [])
 
-    x = minimize(error, np.log(inicio), method="Nelder-Mead",
-                 options={"xatol": 1e-4, "fatol": 1e-9}).x
+    def residuos(x):
+        m = matriz(math.exp(x[0]), math.exp(x[1]), rho)
+        r = list(probabilidades_1x2(m))
+        if "mas25" in mercado:
+            r.append(1 - sum(m[a, b] for a in range(3) for b in range(3 - a)))
+        return np.array(r) - objetivo
+
+    # Levenberg-Marquardt con derivadas numéricas (solo 2 incógnitas: log λ local y visitante)
+    x, mu = np.log(np.array(inicio, dtype=float)), 1e-3
+    r = residuos(x)
+    for _ in range(100):
+        J = np.column_stack([(residuos(x + h) - r) / 1e-6 for h in np.eye(2) * 1e-6])
+        paso = np.linalg.solve(J.T @ J + mu * np.eye(2), -J.T @ r)
+        r_nuevo = residuos(x + paso)
+        if r_nuevo @ r_nuevo < r @ r:
+            x, r, mu = x + paso, r_nuevo, mu / 3
+            if np.max(np.abs(paso)) < 1e-7:
+                break
+        else:
+            mu *= 4
+            if mu > 1e6:
+                break
     return math.exp(x[0]), math.exp(x[1])
 
 
@@ -184,12 +216,24 @@ def _signo(a, b):
     return "1" if a > b else ("X" if a == b else "2")
 
 
+def puntos_porra(pronostico, real):
+    """Puntos que da un pronóstico (a, b) si el resultado real es (c, d)."""
+    if tuple(pronostico) == tuple(real):
+        return PUNTOS_EXACTO
+    return PUNTOS_SIGNO if _signo(*pronostico) == _signo(*real) else 0
+
+
 def mejor_pronostico(m):
-    """Marcador que maximiza los puntos esperados: 6·P(exacto) + 3·P(signo sin exacto)."""
+    """Marcador que maximiza los puntos esperados:
+    E = 8·P(exacto) + 3·P(signo pero no exacto) = 3·P(signo) + 5·P(exacto)."""
     p = dict(zip("1X2", probabilidades_1x2(m)))
+
+    def esperados(r):
+        return PUNTOS_SIGNO * p[_signo(*r)] + (PUNTOS_EXACTO - PUNTOS_SIGNO) * m[r]
+
     mejor = max(((a, b) for a in range(MAX_PRONOSTICO + 1) for b in range(MAX_PRONOSTICO + 1)),
-                key=lambda r: p[_signo(*r)] + m[r])
-    return mejor, 3 * (p[_signo(*mejor)] + m[mejor])
+                key=esperados)
+    return mejor, float(esperados(mejor))
 
 
 def predecir(modelo, local, visitante, cuotas=None, cfg=None):

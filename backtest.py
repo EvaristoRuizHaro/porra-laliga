@@ -6,13 +6,7 @@ import sys
 from collections import defaultdict
 from datetime import date, timedelta
 
-from modelo import _signo, ajustar, predecir
-
-
-def puntos_porra(pronostico, real):
-    if pronostico == real:
-        return 6
-    return 3 if _signo(*pronostico) == _signo(*real) else 0
+from modelo import PUNTOS_EXACTO, PUNTOS_SIGNO, _signo, ajustar, predecir, puntos_porra
 
 
 def evaluar(partidos, desde, hasta, elo_en=None, cfg=None, usar_cuotas=True):
@@ -23,7 +17,7 @@ def evaluar(partidos, desde, hasta, elo_en=None, cfg=None, usar_cuotas=True):
             semanas[p["fecha"] - timedelta(days=p["fecha"].weekday())].append(p)
 
     pts = signos = exactos = n = 0
-    logloss = rps = 0.0
+    logloss = rps = logloss_marcador = 0.0
     for lunes in sorted(semanas):
         semana = semanas[lunes]
         equipos = {p[k] for p in semana for k in ("local", "visitante")}
@@ -35,23 +29,26 @@ def evaluar(partidos, desde, hasta, elo_en=None, cfg=None, usar_cuotas=True):
             real = (p["gl"], p["gv"])
             puntos = puntos_porra(pred["resultado"], real)
             pts += puntos
-            signos += puntos >= 3
-            exactos += puntos == 6
+            signos += puntos >= PUNTOS_SIGNO
+            exactos += puntos == PUNTOS_EXACTO
             n += 1
             probs = [pred["p1"], pred["px"], pred["p2"]]
             k = "1X2".index(_signo(*real))
             logloss -= math.log(max(probs[k], 1e-12))
+            m = pred["matriz"]
+            logloss_marcador -= math.log(max(m[min(p["gl"], len(m) - 1), min(p["gv"], len(m) - 1)], 1e-12))
             acum = [probs[0], probs[0] + probs[1]]
             obs = [k <= 0, k <= 1]
             rps += sum((a - b) ** 2 for a, b in zip(acum, obs)) / 2
     return {"partidos": n, "pts_partido": pts / n, "signos": signos / n,
-            "exactos": exactos / n, "logloss": logloss / n, "rps": rps / n}
+            "exactos": exactos / n, "logloss": logloss / n, "rps": rps / n,
+            "logloss_marcador": logloss_marcador / n}
 
 
 def mostrar(nombre, r):
     print(f"{nombre:<34} {r['partidos']:>5}  {r['pts_partido']:.3f} pts/partido  "
           f"signo {r['signos']:.1%}  exacto {r['exactos']:.1%}  "
-          f"logloss {r['logloss']:.4f}  RPS {r['rps']:.4f}")
+          f"logloss 1X2 {r['logloss']:.4f}  logloss marcador {r['logloss_marcador']:.4f}")
 
 
 if __name__ == "__main__":
