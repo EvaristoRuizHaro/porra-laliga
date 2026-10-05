@@ -1,10 +1,10 @@
-# Ejecuta la porra cada lunes a las 08:00 hora de España
+# Ejecuta la porra cada lunes a las 07:47 hora de España (fuera de la hora en punto para evitar retrasos de GitHub)
 name: Porra semanal
 
 on:
   schedule:
-    - cron: "0 6 * * 1"   # 08:00 en verano (UTC+2)
-    - cron: "0 7 * * 1"   # 08:00 en invierno (UTC+1)
+    - cron: "47 5 * * 1"   # 07:47 en verano (UTC+2)
+    - cron: "47 6 * * 1"   # 07:47 en invierno (UTC+1)
   workflow_dispatch:       # botón para lanzarlo a mano desde GitHub
 
 jobs:
@@ -20,8 +20,8 @@ jobs:
           CRON="${{ github.event.schedule }}"
           echo "Offset Madrid: $OFFSET | Disparador: '$CRON' | Evento: ${{ github.event_name }}"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] \
-             || { [ "$OFFSET" = "+0200" ] && [ "$CRON" = "0 6 * * 1" ]; } \
-             || { [ "$OFFSET" = "+0100" ] && [ "$CRON" = "0 7 * * 1" ]; }; then
+             || { [ "$OFFSET" = "+0200" ] && [ "$CRON" = "47 5 * * 1" ]; } \
+             || { [ "$OFFSET" = "+0100" ] && [ "$CRON" = "47 6 * * 1" ]; }; then
             echo "seguir=true" >> "$GITHUB_OUTPUT"
           else
             echo "No es este disparador, salgo."

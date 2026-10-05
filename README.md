@@ -15,7 +15,7 @@
 
 ## 📲 Qué recibes
 
-Cada lunes a las 8:00 (hora de España) llega un mensaje así:
+Cada lunes a las 7:47 (hora de España) llega un mensaje así:
 
 ```text
 ⚽ PORRA 05/10 - 11/10
@@ -106,7 +106,7 @@ python porra.py 2026-10-12     # cualquier otra semana (vale cualquier día de e
 
 1. Haz un fork de este repositorio.
 2. En **Settings → Secrets and variables → Actions** añade `FOOTBALL_DATA_KEY`, `TELEGRAM_TOKEN` y `TELEGRAM_CHAT_ID`.
-3. Listo: se ejecuta cada lunes a las 8:00 (hora de Madrid, con el cambio de hora ya contemplado). Para probarlo al momento, entra en **Actions → Porra semanal → Run workflow**.
+3. Listo: se ejecuta cada lunes a las 7:47 (hora de Madrid, con el cambio de hora ya contemplado). Para probarlo al momento, entra en **Actions → Porra semanal → Run workflow**.
 
 > 💡 ¿Lo quieres para tu grupo de amigos? Mete el bot en el grupo, escribe algo allí y usa como `TELEGRAM_CHAT_ID` el id del grupo (empieza por `-`).
 
