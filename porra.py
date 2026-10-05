@@ -1,6 +1,7 @@
 # Agente de la porra: predice todos los partidos de LaLiga de esta semana (lunes a domingo)
 #   Uso normal:          python porra.py
 #   Probar otra semana:  python porra.py 2026-10-12      (cualquier día de esa semana)
+#   Sin enviar ni tocar el historial:  python porra.py --prueba
 import os
 import sys
 from datetime import date, datetime, timedelta
@@ -9,15 +10,14 @@ from zoneinfo import ZoneInfo
 import requests
 from dotenv import load_dotenv
 
-from datos import nombre, partidos_entre, partidos_terminados
-from explicacion import justificar
-from modelo import calcular_fuerzas, predecir
+import datos
+import historial
+from explicacion import estadisticas, justificar
+from modelo import ajustar, predecir
 
 load_dotenv()
 MADRID = ZoneInfo("Europe/Madrid")
 DIAS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"]
-
-
 LIMITE_TELEGRAM = 4000  # Telegram admite 4096 caracteres por mensaje; dejamos margen
 
 
@@ -50,39 +50,62 @@ def semana_de(dia):
 
 
 def main():
-    # Si pasas una fecha por consola usamos esa semana; si no, la actual
-    dia = date.fromisoformat(sys.argv[1]) if len(sys.argv) > 1 else datetime.now(MADRID).date()
-    lunes, domingo = semana_de(dia)
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    prueba = "--prueba" in sys.argv
+    hoy = datetime.now(MADRID).date()
+    lunes, domingo = semana_de(date.fromisoformat(args[0]) if args else hoy)
+    corte = min(hoy, lunes)  # solo usamos partidos jugados antes de empezar la semana
     print(f"Semana del {lunes} al {domingo}")
 
-    fuerzas, media_local, media_visit = calcular_fuerzas(partidos_terminados())
-    partidos = partidos_entre(lunes.isoformat(), domingo.isoformat())
+    partidos = datos.partidos_entre(lunes.isoformat(), domingo.isoformat())
     partidos.sort(key=lambda p: p["utcDate"])
+    jugados, terminados_api = datos.historico(corte)
+
+    # Historial: apuntamos resultados de semanas anteriores y sacamos el balance
+    filas = historial.cargar()
+    historial.apuntar_resultados(filas, terminados_api)
+    balance = historial.resumen(filas, lunes)
 
     if not partidos:
-        mensaje = f"⚽ Esta semana ({lunes:%d/%m} - {domingo:%d/%m}) no hay partidos de LaLiga."
-        print(mensaje)
-        enviar_telegram(mensaje)
-        return
+        lineas = [f"⚽ Esta semana ({lunes:%d/%m} - {domingo:%d/%m}) no hay partidos de LaLiga."]
+    else:
+        equipos = {p[k] for p in partidos for k in ("local", "visitante")}
+        modelo = ajustar(jugados, corte, elo=datos.elo(corte, jugados), equipos_extra=equipos)
+        cuotas = datos.cuotas_semana()
+        stats = estadisticas(jugados, corte)
 
-    lineas = [f"⚽ PORRA {lunes:%d/%m} - {domingo:%d/%m}"]
-    total = 0
-    for p in partidos:
-        local, visit = nombre(p["homeTeam"]), nombre(p["awayTeam"])
-        fecha = datetime.fromisoformat(p["utcDate"].replace("Z", "+00:00")).astimezone(MADRID)
-        pred = predecir(local, visit, fuerzas, media_local, media_visit)
-        a, b = pred["resultado"]
-        total += pred["puntos_esperados"]
-        lineas.append(
-            f"{DIAS[fecha.weekday()]} {fecha:%d/%m %H:%M} (J{p['matchday']})\n"
-            f"  {local} {a}-{b} {visit}\n"
-            f"  1: {pred['p1']:.0%} | X: {pred['px']:.0%} | 2: {pred['p2']:.0%}\n"
-            f"  💬 {justificar(local, visit, pred, fuerzas)}"
-        )
+        lineas = [f"⚽ PORRA {lunes:%d/%m} - {domingo:%d/%m}"]
+        total, con_cuotas, nuevas = 0, 0, []
+        for p in partidos:
+            local, visit = datos.nombre(p["homeTeam"]), datos.nombre(p["awayTeam"])
+            fecha = datos._fecha_api(p).astimezone(MADRID)
+            c = cuotas.get((p["local"], p["visitante"]))
+            con_cuotas += c is not None
+            pred = predecir(modelo, p["local"], p["visitante"], cuotas=c)
+            a, b = pred["resultado"]
+            total += pred["puntos_esperados"]
+            nuevas.append(historial.fila(p, pred, fecha.date()))
+            lineas.append(
+                f"{DIAS[fecha.weekday()]} {fecha:%d/%m %H:%M} (J{p['matchday']})\n"
+                f"  {local} {a}-{b} {visit}\n"
+                f"  1: {pred['p1']:.0%} | X: {pred['px']:.0%} | 2: {pred['p2']:.0%}\n"
+                f"  💬 {justificar(p, local, visit, pred, modelo, stats)}"
+            )
+        lineas.append(f"📊 Puntos esperados esta semana: {total:.1f}"
+                      f"\n💶 Cuotas de las casas en {con_cuotas}/{len(partidos)} partidos")
+        historial.anadir(filas, nuevas)
 
-    lineas.append(f"📊 Puntos esperados esta semana: {total:.1f}")
+    if balance:
+        lineas.append(balance)
+    if datos.avisos:
+        lineas.append("⚠️ " + " · ".join(datos.avisos))
+
     mensaje = "\n\n".join(lineas)
     print(mensaje)
+    if prueba:
+        print("\n(--prueba: no se envía a Telegram ni se guarda el historial)")
+        return
+    historial.guardar(filas)
     enviar_telegram(mensaje)
 
 

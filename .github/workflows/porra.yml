@@ -7,6 +7,11 @@ on:
     - cron: "47 6 * * 1"   # 07:47 en invierno (UTC+1)
   workflow_dispatch:       # botón para lanzarlo a mano desde GitHub
 
+permissions:
+  contents: write          # para poder guardar historial.csv en el repositorio
+
+concurrency: porra         # nunca dos ejecuciones a la vez (se pisarían el historial)
+
 jobs:
   porra:
     runs-on: ubuntu-latest
@@ -34,6 +39,7 @@ jobs:
         if: steps.hora.outputs.seguir == 'true'
         with:
           python-version: "3.12"
+          cache: pip
 
       - name: Instalar dependencias
         if: steps.hora.outputs.seguir == 'true'
@@ -45,4 +51,16 @@ jobs:
           FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: python porra.py
+
+      # Sube historial.csv con los pronósticos nuevos y los resultados apuntados
+      - name: Guardar historial
+        if: steps.hora.outputs.seguir == 'true'
+        run: |
+          git config user.name "porra-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          [ -f historial.csv ] || exit 0
+          git add historial.csv
+          git diff --cached --quiet || git commit -m "Historial: semana del $(TZ=Europe/Madrid date +%d/%m/%Y)"
+          git push
