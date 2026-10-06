@@ -1,14 +1,20 @@
-# Ejecuta la porra cada lunes a las 07:47 hora de España (fuera de la hora en punto para evitar retrasos de GitHub)
+# Ejecuta la porra cada lunes por la mañana (hora de España).
+# GitHub a veces se salta o retrasa las ejecuciones programadas, así que hay varios intentos:
+# el primero que llega después de las 07:00 de Madrid envía la porra y los demás ven que
+# ya se envió y no hacen nada.
 name: Porra semanal
 
 on:
   schedule:
-    - cron: "47 5 * * 1"   # 07:47 en verano (UTC+2)
-    - cron: "47 6 * * 1"   # 07:47 en invierno (UTC+1)
-  workflow_dispatch:       # botón para lanzarlo a mano desde GitHub
+    - cron: "47 5 * * 1"   # 07:47 en verano / 06:47 en invierno (se ignora, es antes de las 7)
+    - cron: "47 6 * * 1"   # 08:47 en verano / 07:47 en invierno
+    - cron: "23 8 * * 1"   # repesca: 10:23 en verano / 09:23 en invierno
+    - cron: "23 10 * * 1"  # repesca: 12:23 en verano / 11:23 en invierno
+  workflow_dispatch:       # botón para lanzarlo a mano desde GitHub (siempre envía)
 
 permissions:
   contents: write          # para poder guardar historial.csv en el repositorio
+  actions: read            # para ver si otra ejecución de hoy ya envió la porra
 
 concurrency: porra         # nunca dos ejecuciones a la vez (se pisarían el historial)
 
@@ -16,21 +22,30 @@ jobs:
   porra:
     runs-on: ubuntu-latest
     steps:
-      # De los dos disparadores, solo seguimos con el que toca según el horario de Madrid.
-      # Comparamos con el cron que lo lanzó (no con la hora real), por si GitHub se retrasa.
-      - name: Comprobar horario de verano/invierno
+      - name: Comprobar si toca enviar
         id: hora
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          OFFSET=$(TZ=Europe/Madrid date +%z)
-          CRON="${{ github.event.schedule }}"
-          echo "Offset Madrid: $OFFSET | Disparador: '$CRON' | Evento: ${{ github.event_name }}"
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] \
-             || { [ "$OFFSET" = "+0200" ] && [ "$CRON" = "47 5 * * 1" ]; } \
-             || { [ "$OFFSET" = "+0100" ] && [ "$CRON" = "47 6 * * 1" ]; }; then
-            echo "seguir=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "No es este disparador, salgo."
+          HORA=$(TZ=Europe/Madrid date +%H)
+          echo "Hora Madrid: $HORA | Evento: ${{ github.event_name }}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "seguir=true" >> "$GITHUB_OUTPUT"; exit 0
           fi
+          if [ "$HORA" -lt 7 ]; then
+            echo "Aún no son las 7 en Madrid, salgo."; exit 0
+          fi
+          # ¿Alguna ejecución de hoy ya pasó por el paso "Ejecutar porra" con éxito?
+          HOY=$(date -u +%F)
+          for id in $(gh run list -R "${{ github.repository }}" -w porra.yml --created ">=$HOY" \
+                        -s success --json databaseId -q '.[].databaseId'); do
+            if gh run view "$id" -R "${{ github.repository }}" --json jobs \
+                 -q '.jobs[].steps[] | select(.name=="Ejecutar porra" and .conclusion=="success") | .name' \
+                 | grep -q .; then
+              echo "La porra ya se envió hoy (ejecución $id), salgo."; exit 0
+            fi
+          done
+          echo "seguir=true" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
         if: steps.hora.outputs.seguir == 'true'
@@ -63,4 +78,5 @@ jobs:
           [ -f historial.csv ] || exit 0
           git add historial.csv
           git diff --cached --quiet || git commit -m "Historial: semana del $(TZ=Europe/Madrid date +%d/%m/%Y)"
+          git pull --rebase origin main   # por si has subido cambios mientras se ejecutaba
           git push
