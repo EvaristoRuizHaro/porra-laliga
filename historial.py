@@ -8,14 +8,18 @@ from modelo import PUNTOS_EXACTO, PUNTOS_SIGNO, inicio_temporada, puntos_porra
 
 ARCHIVO = "historial.csv"
 COLUMNAS = ["id", "fecha", "jornada", "local", "visitante", "pronostico",
-            "p1", "px", "p2", "puntos_esperados", "resultado", "puntos"]
+            "p1", "px", "p2", "puntos_esperados", "resultado", "puntos", "competicion"]
+NOMBRE_COMPETICION = {"PD": "LaLiga", "CL": "Champions"}
 
 
 def cargar():
     if not os.path.exists(ARCHIVO):
         return []
     with open(ARCHIVO, newline="", encoding="utf-8") as f:
-        return list(csv.DictReader(f))
+        filas = list(csv.DictReader(f))
+    for f in filas:
+        f["competicion"] = f.get("competicion") or "PD"   # filas antiguas: eran todas de LaLiga
+    return filas
 
 
 def guardar(filas):
@@ -74,6 +78,15 @@ def resumen(filas, lunes):
     lineas.append(f"🏆 Temporada: {temporada['pts']} pts en {temporada['n']} partidos "
                   f"({temporada['pts'] / temporada['n']:.2f} por partido, "
                   f"{temporada['signos'] / temporada['n']:.0%} de signos)")
+    # Si ya hay partidos de Champions, desglose por competición
+    desde, hasta = inicio_temporada(lunes).isoformat(), lunes.isoformat()
+    partes = []
+    for comp, nombre in NOMBRE_COMPETICION.items():
+        b = _balance([f for f in filas if desde <= f["fecha"] < hasta and f["competicion"] == comp])
+        if b["n"]:
+            partes.append(f"{nombre} {b['pts']} pts en {b['n']} ({b['pts'] / b['n']:.2f}/partido)")
+    if len(partes) > 1:
+        lineas.append("   " + " · ".join(partes))
     return "\n".join(lineas)
 
 
@@ -84,7 +97,7 @@ def fila(partido, pred, fecha):
             "local": partido["local"], "visitante": partido["visitante"],
             "pronostico": f"{a}-{b}", "p1": f"{pred['p1']:.3f}", "px": f"{pred['px']:.3f}",
             "p2": f"{pred['p2']:.3f}", "puntos_esperados": f"{pred['puntos_esperados']:.2f}",
-            "resultado": "", "puntos": ""}
+            "resultado": "", "puntos": "", "competicion": partido.get("competicion", "PD")}
 
 
 if __name__ == "__main__":

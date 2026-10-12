@@ -44,7 +44,7 @@ def _razon(favorito, rival, modelo, stats):
     return "pesa más su nivel (Elo y temporada pasada) que cómo ha empezado la temporada"
 
 
-def _frase_mercado(pred):
+def _frase_mercado(pred, fuente="las estadísticas"):
     if not pred["mercado"]:
         return ""
     m1, mx, m2 = pred["mercado"]
@@ -52,7 +52,7 @@ def _frase_mercado(pred):
     mayor = max(("1", m1, e1), ("X", mx, ex), ("2", m2, e2), key=lambda t: abs(t[1] - t[2]))
     if abs(mayor[1] - mayor[2]) < 0.08:
         return f" Las casas de apuestas lo ven parecido (1: {m1:.0%} | X: {mx:.0%} | 2: {m2:.0%})."
-    return (f" Ojo: las casas dan al {mayor[0]} un {mayor[1]:.0%} y las estadísticas un "
+    return (f" Ojo: las casas dan al {mayor[0]} un {mayor[1]:.0%} y {fuente} un "
             f"{mayor[2]:.0%}; el pronóstico mezcla ambos.")
 
 
@@ -62,7 +62,6 @@ def justificar(partido, local, visitante, pred, modelo, stats):
     eq_local, eq_visit = (partido["local"], local), (partido["visitante"], visitante)
     a, b = pred["resultado"]
     gl, gv = pred["goles_esperados"]
-
     if a > b:
         frase1 = (f"{local} parte como favorito en casa ({pred['p1']:.0%} de victoria): "
                   f"{_razon(eq_local, eq_visit, modelo, stats)}.")
@@ -73,6 +72,37 @@ def justificar(partido, local, visitante, pred, modelo, stats):
         frase1 = (f"Partido muy igualado: se esperan {gl:.1f} goles de {local} "
                   f"y {gv:.1f} de {visitante}, y el empate tiene un {pred['px']:.0%}.")
 
-    frase2 = (f" Con {gl:.1f}-{gv:.1f} goles esperados, el {a}-{b} es el marcador más probable "
-              f"de ese signo ({pred['p_exacto']:.0%}) y da {pred['puntos_esperados']:.1f} puntos esperados.")
-    return frase1 + _frase_mercado(pred) + frase2
+    return frase1 + _frase_mercado(pred) + _frase_marcador(pred)
+
+
+def _frase_marcador(pred):
+    a, b = pred["resultado"]
+    gl, gv = pred["goles_esperados"]
+    return (f" Con {gl:.1f}-{gv:.1f} goles esperados, el {a}-{b} es el marcador más probable "
+            f"de ese signo ({pred['p_exacto']:.0%}) y da {pred['puntos_esperados']:.1f} puntos esperados.")
+
+
+def justificar_champions(local, visitante, pred, elo_local, elo_visit):
+    """Como justificar(), pero en Champions el argumento es el Elo europeo (y las cuotas)."""
+    a, b = pred["resultado"]
+    gl, gv = pred["goles_esperados"]
+    if elo_local is None or elo_visit is None:
+        sin = " y ".join(n for n, e in ((local, elo_local), (visitante, elo_visit)) if e is None)
+        motivo = f"no hay Elo de {sin}, así que manda lo que dicen las casas"
+    else:
+        dif = elo_local - elo_visit
+        if abs(dif) < 25:
+            motivo = f"tienen un Elo europeo casi igual ({elo_local:.0f} vs {elo_visit:.0f})"
+        else:
+            mejor = local if dif > 0 else visitante
+            motivo = (f"{mejor} tiene {abs(dif):.0f} puntos más de Elo europeo "
+                      f"({elo_local:.0f} vs {elo_visit:.0f})")
+
+    if a > b:
+        frase1 = f"{local} parte como favorito en casa ({pred['p1']:.0%} de victoria): {motivo}."
+    elif a < b:
+        frase1 = f"{visitante} es favorito incluso fuera ({pred['p2']:.0%} de victoria): {motivo}."
+    else:
+        frase1 = (f"Partido muy igualado ({motivo}): se esperan {gl:.1f} goles de {local} "
+                  f"y {gv:.1f} de {visitante}, y el empate tiene un {pred['px']:.0%}.")
+    return frase1 + _frase_mercado(pred, "el Elo") + _frase_marcador(pred)

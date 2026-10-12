@@ -2,7 +2,7 @@
 
 # ⚽ Porra LaLiga
 
-**Un agente que cada lunes predice todos los partidos de LaLiga de la semana y te los manda por Telegram.**
+**Un agente que cada lunes predice todos los partidos de LaLiga (y de Champions, si hay) de la semana y te los manda por Telegram.**
 
 [![Porra semanal](https://github.com/EvaristoRuizHaro/porra-laliga/actions/workflows/porra.yml/badge.svg)](https://github.com/EvaristoRuizHaro/porra-laliga/actions/workflows/porra.yml)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
@@ -42,10 +42,10 @@ Para cada partido: **marcador recomendado**, **probabilidades 1X2**, **por qué*
 1. **Datos** (todos gratis):
    | Fuente | Qué aporta |
    |---|---|
-   | [football-data.org](https://www.football-data.org) | Calendario de la semana y resultados al momento |
+   | [football-data.org](https://www.football-data.org) | Calendario de la semana (LaLiga y Champions) y resultados al momento |
    | [football-data.co.uk](https://www.football-data.co.uk) | Resultados, **tiros a puerta** y cuotas de esta temporada y la pasada |
-   | [ClubElo](http://clubelo.com) | **Elo** de cada club (también de Segunda, para los recién ascendidos). Si está caído, el agente calcula su propio Elo con los resultados de Primera y Segunda |
-   | [The Odds API](https://the-odds-api.com) *(opcional)* | **Cuotas** de los partidos de la semana |
+   | [ClubElo](http://clubelo.com) | **Elo** de cada club (también de Segunda, para los recién ascendidos, y de toda Europa, para la Champions). Si está caído, el agente calcula su propio Elo con los resultados de Primera y Segunda |
+   | [The Odds API](https://the-odds-api.com) *(opcional)* | **Cuotas** de los partidos de la semana (LaLiga y Champions) |
 
    Si una fuente falla, el agente sigue con las demás y lo avisa al final del mensaje.
 
@@ -70,7 +70,9 @@ Para cada partido: **marcador recomendado**, **probabilidades 1X2**, **por qué*
 
    $$E[\text{puntos}] = 8 \cdot P(\text{exacto}) + 3 \cdot P(\text{signo sin exacto}) = 3 \cdot P(\text{signo}) + 5 \cdot P(\text{exacto})$$
 
-6. **Historial.** Cada pronóstico se guarda en `historial.csv`; el lunes siguiente se apunta el resultado real y los puntos.
+6. **Champions.** El modelo de Poisson solo conoce equipos españoles, así que en Champions se usa el **Elo europeo de ClubElo**: se buscan los goles esperados que dan la misma expectativa que la diferencia de Elo (+70 puntos por jugar en casa; la final, en campo neutral). Después se mezclan con las cuotas (90 % casas, porque el Elo solo es más flojo). Se pronostica el resultado a los 90 minutos. Ajustes en `CONFIG_CHAMPIONS` (`champions.py`).
+
+7. **Historial.** Cada pronóstico se guarda en `historial.csv`; el lunes siguiente se apunta el resultado real y los puntos.
 
 ## 📈 ¿Funciona?
 
