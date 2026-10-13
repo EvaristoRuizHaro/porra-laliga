@@ -18,7 +18,7 @@ from functools import lru_cache
 
 import datos
 import elo as elo_calc
-from champions import parecido
+from champions import _tokens, parecido
 from modelo import inicio_temporada
 from nombres import _normalizar, canonico
 
@@ -47,6 +47,7 @@ SIN_LIGA = {
     "maccabi haifa fc": 1520, "apoel fc": 1480, "pafos fc": 1520, "fc midtjylland": 1580,
     "fc sheriff tiraspol": 1460, "fc kairat": 1460, "sabah fk": 1460, "fk bodo glimt": 1660,
 }
+_SIN_LIGA = {" ".join(_tokens(k)): v for k, v in SIN_LIGA.items()}   # sin FC/FK/años
 
 # football-data.org escribe algunos equipos muy distinto que football-data.co.uk.
 # Forma normalizada -> nombre en football-data.co.uk (si no aparece, se busca por parecido)
@@ -185,11 +186,15 @@ def calcular(hoy, al_partido=None):
     europa, inicial_equipo = [], {}
     for p in _champions(hoy):
         for eq in (p["local_api"], p["visitante_api"]):
-            n = _normalizar(eq.get("name", ""))
-            if n in SIN_LIGA and nombre(eq) not in conocidos:
-                inicial_equipo[nombre(eq)] = SIN_LIGA[n]
+            n = " ".join(_tokens(eq.get("name", "")))
+            if n in _SIN_LIGA and nombre(eq) not in conocidos:
+                inicial_equipo[nombre(eq)] = _SIN_LIGA[n]
         europa.append({**p, "local": nombre(p["local_api"]), "visitante": nombre(p["visitante_api"])})
     print(f"Elo europeo: {len(ligas)} partidos de liga, {len(europa)} de Champions")
+    sueltos = sorted({p[k] for p in europa for k in ("local", "visitante")} - conocidos)
+    if sueltos:
+        print(f"Elo europeo: equipos de Champions sin liga en los datos ({len(sueltos)}): "
+              + ", ".join(sueltos))
     if not europa:
         datos._avisar("Elo europeo sin partidos de Champions: las ligas no se comparan entre sí")
 

@@ -60,7 +60,9 @@ _RELLENO = {"fc", "cf", "ac", "as", "sc", "afc", "sk", "fk", "nk", "gnk", "bsc",
 
 
 def _tokens(texto):
-    return [t for t in _normalizar(texto).split() if t not in _RELLENO] or _normalizar(texto).split()
+    """Palabras que distinguen al equipo: sin siglas de club ni años ('Como 1907' -> ['como'])."""
+    palabras = _normalizar(texto).split()
+    return [t for t in palabras if t not in _RELLENO and not t.isdigit()] or palabras
 
 
 def parecido(a, b):
