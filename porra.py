@@ -3,6 +3,7 @@
 #   Uso normal:          python porra.py
 #   Probar otra semana:  python porra.py 2026-10-12      (cualquier día de esa semana)
 #   Sin enviar ni tocar el historial:  python porra.py --prueba
+#   Champions con el Elo europeo propio aunque ClubElo funcione:  --elo-propio
 import os
 import sys
 from datetime import date, datetime, timedelta
@@ -13,6 +14,7 @@ from dotenv import load_dotenv
 
 import champions
 import datos
+import elo_europa
 import historial
 from explicacion import estadisticas, justificar, justificar_champions
 from modelo import ajustar, predecir
@@ -84,13 +86,35 @@ def predecir_laliga(partidos, jugados, corte):
     return res
 
 
+def elo_champions(corte):
+    """Función equipo -> Elo europeo. Prueba en orden: ClubElo, Elo propio (ligas + Champions)
+    y la última copia de ClubElo. Lleva .fuente y .hay_datos para los avisos."""
+    def con(funcion, fuente, hay_datos=True):
+        funcion.fuente, funcion.hay_datos = fuente, hay_datos
+        return funcion
+
+    elos, _ = ({}, None) if "--elo-propio" in sys.argv else datos.elo_europa(corte)
+    if elos:
+        print(f"Elo europeo de ClubElo: {len(elos)} clubes")
+        return con(lambda equipo: champions.buscar_elo(equipo, elos), "ClubElo")
+    try:
+        tabla, buscar = elo_europa.calcular(corte)
+        if tabla:
+            datos._avisar("ClubElo caído: Champions con el Elo europeo calculado por el agente")
+            return con(buscar, "Elo propio")
+    except Exception as e:
+        print(f"Elo europeo propio no disponible ({e.__class__.__name__}: {e})")
+    elos, fecha = datos.elo_europa_copia()
+    if elos:
+        datos._avisar(f"ClubElo caído: Elo europeo de la copia del {fecha:%d/%m}")
+        return con(lambda equipo: champions.buscar_elo(equipo, elos), "copia de ClubElo")
+    datos._avisar("Sin Elo europeo: en Champions solo cuentan las cuotas")
+    return con(lambda equipo: None, "sin Elo", hay_datos=False)
+
+
 def predecir_champions(partidos, corte):
     """Pronósticos de Champions con el Elo europeo + cuotas. Devuelve {id: (pred, justificación, hay_cuotas)}."""
-    elos, fecha_elo = datos.elo_europa(corte)
-    if not elos:
-        datos._avisar("ClubElo caído y sin copia guardada: en Champions solo cuentan las cuotas")
-    elif fecha_elo < corte - timedelta(days=3):
-        datos._avisar(f"ClubElo caído: Elo europeo de la copia del {fecha_elo:%d/%m}")
+    buscar = elo_champions(corte)
     try:
         eventos = datos.eventos_odds_api("CL")
         cuotas = champions.emparejar_cuotas(partidos, eventos)
@@ -103,12 +127,12 @@ def predecir_champions(partidos, corte):
     res, sin_datos = {}, []
     for p in partidos:
         c = cuotas.get(p["id"])
-        pred, el, ev = champions.predecir_partido(p, elos, c)
+        pred, el, ev = champions.predecir_partido(p, buscar, c)
         local, visit = datos.nombre(p["homeTeam"]), datos.nombre(p["awayTeam"])
-        if elos:
+        if buscar.hay_datos:
             for nombre, e in ((local, el), (visit, ev)):
                 if e is None:
-                    print(f"⚠️  Sin Elo para '{nombre}' (añádelo a ALIAS_ELO en champions.py)")
+                    print(f"⚠️  Sin Elo para '{nombre}' ({buscar.fuente}: revisa los alias)")
         if c is None and (el is None or ev is None):
             sin_datos.append(f"{local}-{visit}")
             porque = "⚠️ SIN DATOS (ni Elo ni cuotas): pronóstico por defecto, decide tú."

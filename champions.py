@@ -1,7 +1,8 @@
 # Pronósticos de Champions League.
 #
 # El modelo de LaLiga no sirve aquí: solo conoce equipos españoles. Para la Champions usamos:
-#   1. Elo de ClubElo (cubre todos los clubes de Europa, así se comparan ligas distintas).
+#   1. Elo europeo: el de ClubElo (cubre todos los clubes de Europa) o, si está caído, el que
+#      calculamos nosotros con las ligas y los cruces de Champions (elo_europa.py).
 #      Del Elo sacamos los goles esperados: buscamos λ_local y λ_visitante tales que la
 #      "expectativa" del partido (P(gana local) + ½·P(empate)) sea la que dice el Elo.
 #   2. Cuotas de The Odds API, que pesan más que en LaLiga (el Elo solo es más flojo que
@@ -162,10 +163,10 @@ class ModeloElo:
         return lambdas_elo(self.elo_local, self.elo_visit, self.neutral)
 
 
-def predecir_partido(partido, elos, cuotas=None):
-    """Pronóstico de un partido de Champions. Devuelve (pred, elo_local, elo_visitante),
-    con los Elo a None si no se encontraron."""
-    el, ev = buscar_elo(partido["homeTeam"], elos), buscar_elo(partido["awayTeam"], elos)
+def predecir_partido(partido, buscar, cuotas=None):
+    """Pronóstico de un partido de Champions. buscar(equipo) -> Elo o None.
+    Devuelve (pred, elo_local, elo_visitante), con los Elo a None si no se encontraron."""
+    el, ev = buscar(partido["homeTeam"]), buscar(partido["awayTeam"])
     neutral = partido.get("stage") == "FINAL"          # la final es en campo neutral
     desconocido = CONFIG_CHAMPIONS["elo_desconocido"]
     modelo = ModeloElo(el or desconocido, ev or desconocido, neutral)

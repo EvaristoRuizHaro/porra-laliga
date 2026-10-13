@@ -43,6 +43,11 @@ def _avisar(texto):
 
 def _pedir_api(params, competicion="PD"):
     r = requests.get(API.format(comp=competicion), headers=CABECERAS, params=params, timeout=30)
+    if r.status_code == 429:  # plan gratis: 10 peticiones por minuto; esperamos y repetimos
+        espera = int(r.headers.get("X-RequestCounter-Reset", 60)) + 1
+        print(f"football-data.org: límite de peticiones, espero {espera} s")
+        time.sleep(min(espera, 65))
+        r = requests.get(API.format(comp=competicion), headers=CABECERAS, params=params, timeout=30)
     r.raise_for_status()  # si la clave está mal, aquí salta un error 403/400
     return r.json()["matches"]
 
@@ -151,8 +156,12 @@ def historico_csv(dia, liga="SP1"):
             continue
         tl, tv = _num(f, "HST"), _num(f, "AST")
         avisar = liga == "SP1"  # en Segunda hay muchos equipos que no están en ALIAS (da igual)
-        res.append({"fecha": fecha, "local": canonico(f["HomeTeam"], avisar),
-                    "visitante": canonico(f["AwayTeam"], avisar), "gl": int(gl), "gv": int(gv),
+        if liga in ("SP1", "SP2"):
+            local, visit = canonico(f["HomeTeam"], avisar), canonico(f["AwayTeam"], avisar)
+        else:  # ligas extranjeras (Elo europeo): tal cual, sin parecidos con equipos españoles
+            local, visit = f["HomeTeam"].strip(), f["AwayTeam"].strip()
+        res.append({"fecha": fecha, "local": local,
+                    "visitante": visit, "gl": int(gl), "gv": int(gv),
                     "tl": tl, "tv": tv, "cuotas": _cuotas_fila(f), "liga": liga})
     return res
 
@@ -220,8 +229,8 @@ ELO_EUROPA_CACHE = "elo_europa.csv"   # última tabla buena de ClubElo, por si s
 
 def elo_europa(dia):
     """Elo de ClubElo de todos los clubes europeos, con su nombre de ClubElo: {"Bayern": 1990, ...}.
-    Cada vez que ClubElo responde se guarda una copia en elo_europa.csv; si está caído, se usa
-    esa copia (el Elo cambia poco de una semana a otra). Devuelve (elos, fecha_de_los_datos)."""
+    Cada vez que ClubElo responde se guarda una copia en elo_europa.csv (ver elo_europa_copia).
+    Devuelve (elos, fecha) o ({}, None) si ClubElo no responde."""
     res = {}
     for f in _clubelo(dia):
         try:
@@ -234,6 +243,11 @@ def elo_europa(dia):
             w.writerow(["club", "elo", "fecha"])
             w.writerows([club, f"{elo:.0f}", dia.isoformat()] for club, elo in res.items())
         return res, dia
+    return {}, None
+
+
+def elo_europa_copia():
+    """Última copia guardada de ClubElo: (elos, fecha) o ({}, None)."""
     try:
         with open(ELO_EUROPA_CACHE, newline="", encoding="utf-8") as fh:
             filas = list(csv.DictReader(fh))

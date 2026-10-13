@@ -10,7 +10,16 @@ on:
     - cron: "47 6 * * 1"   # 08:47 en verano / 07:47 en invierno
     - cron: "23 8 * * 1"   # repesca: 10:23 en verano / 09:23 en invierno
     - cron: "23 10 * * 1"  # repesca: 12:23 en verano / 11:23 en invierno
-  workflow_dispatch:       # botón para lanzarlo a mano desde GitHub (siempre envía)
+  workflow_dispatch:       # botón para lanzarlo a mano desde GitHub
+    inputs:
+      prueba:
+        description: "Prueba: no envía a Telegram; deja la salida en la rama salida-prueba"
+        type: boolean
+        default: false
+      elo_propio:
+        description: "Usar el Elo europeo propio aunque ClubElo funcione"
+        type: boolean
+        default: false
 
 permissions:
   contents: write          # para poder guardar historial.csv en el repositorio
@@ -60,8 +69,27 @@ jobs:
         if: steps.hora.outputs.seguir == 'true'
         run: pip install -r requirements.txt
 
+      - name: Probar porra (sin enviar)
+        if: steps.hora.outputs.seguir == 'true' && inputs.prueba
+        env:
+          FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          OPC=""
+          [ "${{ inputs.elo_propio }}" = "true" ] && OPC="--elo-propio"
+          python porra.py --prueba $OPC 2>&1 | tee salida.txt
+          echo "=============== ELO EUROPEO PROPIO ===============" >> salida.txt
+          python elo_europa.py >> salida.txt 2>&1 || true
+          git config user.name "porra-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan salida-prueba
+          git rm -rfq --cached .
+          git add salida.txt
+          git commit -qm "Salida de prueba $(TZ=Europe/Madrid date '+%d/%m/%Y %H:%M')"
+          git push -fq origin salida-prueba
+
       - name: Ejecutar porra
-        if: steps.hora.outputs.seguir == 'true'
+        if: steps.hora.outputs.seguir == 'true' && !inputs.prueba
         env:
           FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
@@ -71,7 +99,7 @@ jobs:
 
       # Sube historial.csv con los pronósticos nuevos y los resultados apuntados
       - name: Guardar historial
-        if: steps.hora.outputs.seguir == 'true'
+        if: steps.hora.outputs.seguir == 'true' && !inputs.prueba
         run: |
           git config user.name "porra-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
