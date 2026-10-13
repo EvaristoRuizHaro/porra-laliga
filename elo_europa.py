@@ -44,7 +44,7 @@ SIN_LIGA = {
     "hnk rijeka": 1500, "fk crvena zvezda": 1600, "fk partizan": 1520,
     "ferencvarosi tc": 1560, "qarabag agdam fk": 1560, "qarabag fk": 1560,
     "sk slovan bratislava": 1500, "pfc ludogorets 1945": 1540, "maccabi tel aviv fc": 1530,
-    "maccabi haifa fc": 1520, "apoel fc": 1480, "pafos fc": 1520, "fc midtjylland": 1580,
+    "maccabi haifa fc": 1520, "apoel fc": 1480, "pafos fc": 1520, "paphos fc": 1520, "fc midtjylland": 1580,
     "fc sheriff tiraspol": 1460, "fc kairat": 1460, "sabah fk": 1460, "fk bodo glimt": 1660,
 }
 _SIN_LIGA = {" ".join(_tokens(k)): v for k, v in SIN_LIGA.items()}   # sin FC/FK/años
@@ -68,7 +68,8 @@ ALIAS = {
     "club brugge kv": "Club Brugge", "royale union saint gilloise": "St. Gilloise",
     "olympiakos sfp": "Olympiakos", "olympiacos fc": "Olympiakos", "pae aek": "AEK",
     "paok fc": "PAOK", "fc red bull salzburg": "Salzburg", "sk sturm graz": "Sturm Graz",
-    "lask linz": "LASK", "bsc young boys": "Young Boys", "fc kobenhavn": "FC Copenhagen",
+    "lask linz": "LASK", "bsc young boys": "Young Boys",
+    "fc kobenhavn": ["FC Copenhagen", "Copenhagen"], "fc kbenhavn": ["FC Copenhagen", "Copenhagen"],
     "fk bodo glimt": "Bodo/Glimt", "fk bod glimt": "Bodo/Glimt",
 }
 
@@ -148,8 +149,10 @@ def clave(equipo, conocidos):
         if espanol in conocidos:
             return espanol
         n = _normalizar(forma)
-        if ALIAS.get(n) in conocidos:
-            return ALIAS[n]
+        candidatos = ALIAS.get(n, [])
+        for c in [candidatos] if isinstance(candidatos, str) else candidatos:
+            if c in conocidos:
+                return c
         if n in normal:
             return normal[n]
     mejor, nota = None, 0.0

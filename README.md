@@ -70,7 +70,12 @@ Para cada partido: **marcador recomendado**, **probabilidades 1X2**, **por qué*
 
    $$E[\text{puntos}] = 8 \cdot P(\text{exacto}) + 3 \cdot P(\text{signo sin exacto}) = 3 \cdot P(\text{signo}) + 5 \cdot P(\text{exacto})$$
 
-6. **Champions.** El modelo de Poisson solo conoce equipos españoles, así que en Champions se usa el **Elo europeo de ClubElo**: se buscan los goles esperados que dan la misma expectativa que la diferencia de Elo (+70 puntos por jugar en casa; la final, en campo neutral). Después se mezclan con las cuotas (90 % casas, porque el Elo solo es más flojo). Se pronostica el resultado a los 90 minutos. Ajustes en `CONFIG_CHAMPIONS` (`champions.py`).
+6. **Champions.** El modelo de Poisson solo conoce equipos españoles, así que en Champions se usa un **Elo europeo**: se buscan los goles esperados que dan la misma expectativa que la diferencia de Elo (+70 puntos por jugar en casa; la final, en campo neutral) y se mezclan con las cuotas (90 % casas). Se pronostica el resultado a los 90 minutos. El Elo sale, por orden, de:
+   - **ClubElo**, si funciona.
+   - **Elo propio** (`elo_europa.py`): resultados de 23 ligas europeas (5 temporadas, Primera y Segunda de las grandes) y los partidos de Champions, que son los que comparan unas ligas con otras. Cada liga empieza con un Elo aproximado y los cruces europeos lo corrigen; los clubes de ligas que no tenemos (Slavia, Shakhtar…) parten de un valor fijo y se ajustan con sus partidos de Champions. En los 207 partidos de Champions desde 2025-26, pronosticando cada uno solo con lo anterior: **log-loss 1X2 0,906** (sin información: 1,013) y **61 % de signos**.
+   - La última copia guardada de ClubElo (`elo_europa.csv`).
+
+   `python elo_europa.py` muestra el ranking, la media de cada liga y la evaluación. Ajustes en `CONFIG_CHAMPIONS` (`champions.py`).
 
 7. **Historial.** Cada pronóstico se guarda en `historial.csv`; el lunes siguiente se apunta el resultado real y los puntos.
 
