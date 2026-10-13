@@ -1,0 +1,249 @@
+Semana del 2026-10-12 al 2026-10-18
+Histórico: 458 partidos (0 recientes solo de la API)
+ClubElo 2026-10-12: ConnectTimeout
+ClubElo 2026-10-11: ConnectTimeout
+ClubElo 2026-10-10: ConnectTimeout
+ClubElo caído: Elo calculado con resultados de Primera y Segunda (50 equipos)
+Cuotas de football-data.co.uk: 0 partidos
+The Odds API: quedan 492 créditos este mes
+Cuotas de The Odds API: 21 partidos
+Champions 2022: HTTPError
+Elo europeo: 33150 partidos de liga, 521 de Champions
+Elo europeo: equipos de Champions sin liga en los datos (10): AC Sparta Praha, FK Crvena Zvezda, FK Kairat, FK Shakhtar Donetsk, GNK Dinamo Zagreb, Paphos FC, Qarabağ Ağdam FK, SK Slavia Praha, Sabah FK, ŠK Slovan Bratislava
+⚠️  ClubElo caído: Champions con el Elo europeo calculado por el agente
+The Odds API: quedan 490 créditos este mes
+Cuotas de Champions: 18 en The Odds API, 18/18 emparejadas
+⚽ PORRA 12/10 - 18/10 (LaLiga + Champions)
+
+Lun 12/10 21:00 (J8)
+  Levante 2-1 Sevilla FC
+  1: 45% | X: 27% | 2: 28%
+  💬 Levante parte como favorito en casa (45% de victoria): marca 1.3 goles por partido y Sevilla FC encaja 1.3 (3.7 tiros a puerta por partido). Con 1.6-1.2 goles esperados, el 2-1 es el marcador más probable de ese signo (9%) y da 1.8 puntos esperados.
+
+Mar 13/10 18:45 (🏆 Champions J2)
+  RC Lens 1-2 Sporting CP
+  1: 37% | X: 25% | 2: 38%
+  💬 Sporting CP es favorito incluso fuera (38% de victoria): Sporting CP tiene 86 puntos más de Elo europeo (1756 vs 1843). Las casas de apuestas lo ven parecido (1: 37% | X: 25% | 2: 38%). Con 1.6-1.6 goles esperados, el 1-2 es el marcador más probable de ese signo (8%) y da 1.6 puntos esperados.
+
+Mar 13/10 18:45 (🏆 Champions J2)
+  Sabah FK 1-2 Slavia Praha
+  1: 25% | X: 24% | 2: 51%
+  💬 Slavia Praha es favorito incluso fuera (51% de victoria): Slavia Praha tiene 137 puntos más de Elo europeo (1457 vs 1595). Las casas de apuestas lo ven parecido (1: 25% | X: 24% | 2: 51%). Con 1.3-1.9 goles esperados, el 1-2 es el marcador más probable de ese signo (10%) y da 2.0 puntos esperados.
+
+Mar 13/10 21:00 (🏆 Champions J2)
+  Inter 2-0 Club Brugge
+  1: 76% | X: 15% | 2: 9%
+  💬 Inter parte como favorito en casa (76% de victoria): Inter tiene 124 puntos más de Elo europeo (1905 vs 1781). Ojo: las casas dan al 1 un 77% y el Elo un 66%; el pronóstico mezcla ambos. Con 2.8-0.9 goles esperados, el 2-0 es el marcador más probable de ese signo (9%) y da 2.8 puntos esperados.
+
+Mar 13/10 21:00 (🏆 Champions J2)
+  Galatasaray 1-3 Barça
+  1: 11% | X: 15% | 2: 74%
+  💬 Barça es favorito incluso fuera (74% de victoria): Barça tiene 232 puntos más de Elo europeo (1735 vs 1967). Ojo: las casas dan al 2 un 75% y el Elo un 61%; el pronóstico mezcla ambos. Con 1.2-3.0 goles esperados, el 1-3 es el marcador más probable de ese signo (8%) y da 2.6 puntos esperados.
+
+Mar 13/10 21:00 (🏆 Champions J2)
+  Atleti 2-1 Man United
+  1: 50% | X: 25% | 2: 25%
+  💬 Atleti parte como favorito en casa (50% de victoria): aunque Man United tiene 28 puntos más de Elo europeo (1843 vs 1815), jugar en casa lo compensa. Las casas de apuestas lo ven parecido (1: 51% | X: 25% | 2: 24%). Con 1.8-1.2 goles esperados, el 2-1 es el marcador más probable de ese signo (10%) y da 2.0 puntos esperados.
+
+Mar 13/10 21:00 (🏆 Champions J2)
+  Arsenal 2-0 Lille
+  1: 80% | X: 14% | 2: 6%
+  💬 Arsenal parte como favorito en casa (80% de victoria): Arsenal tiene 255 puntos más de Elo europeo (2010 vs 1755). Las casas de apuestas lo ven parecido (1: 80% | X: 14% | 2: 6%). Con 2.7-0.7 goles esperados, el 2-0 es el marcador más probable de ese signo (13%) y da 3.0 puntos esperados.
+
+Mar 13/10 21:00 (🏆 Champions J2)
+  Viking 0-3 Bayern
+  1: 5% | X: 10% | 2: 85%
+  💬 Bayern es favorito incluso fuera (85% de victoria): Bayern tiene 331 puntos más de Elo europeo (1667 vs 1998). Ojo: las casas dan al 2 un 86% y el Elo un 74%; el pronóstico mezcla ambos. Con 0.9-3.6 goles esperados, el 0-3 es el marcador más probable de ese signo (8%) y da 3.0 puntos esperados.
+
+Mar 13/10 21:00 (🏆 Champions J2)
+  RB Leipzig 2-1 PSV
+  1: 59% | X: 20% | 2: 21%
+  💬 RB Leipzig parte como favorito en casa (59% de victoria): aunque PSV tiene 67 puntos más de Elo europeo (1823 vs 1756), jugar en casa lo compensa. Ojo: las casas dan al 1 un 61% y el Elo un 38%; el pronóstico mezcla ambos. Con 2.5-1.5 goles esperados, el 2-1 es el marcador más probable de ese signo (9%) y da 2.2 puntos esperados.
+
+Mar 13/10 21:00 (🏆 Champions J2)
+  Villarreal 2-1 Napoli
+  1: 45% | X: 26% | 2: 29%
+  💬 Villarreal parte como favorito en casa (45% de victoria): aunque Napoli tiene 79 puntos más de Elo europeo (1795 vs 1716), jugar en casa lo compensa. Ojo: las casas dan al 2 un 28% y el Elo un 39%; el pronóstico mezcla ambos. Con 1.7-1.3 goles esperados, el 2-1 es el marcador más probable de ese signo (9%) y da 1.8 puntos esperados.
+
+Mié 14/10 18:45 (🏆 Champions J2)
+  LASK 0-2 Liverpool
+  1: 10% | X: 16% | 2: 73%
+  💬 Liverpool es favorito incluso fuera (73% de victoria): Liverpool tiene 248 puntos más de Elo europeo (1612 vs 1860). Ojo: las casas dan al 2 un 74% y el Elo un 63%; el pronóstico mezcla ambos. Con 0.9-2.6 goles esperados, el 0-2 es el marcador más probable de ese signo (10%) y da 2.7 puntos esperados.
+
+Mié 14/10 18:45 (🏆 Champions J2)
+  Feyenoord 1-2 Como 1907
+  1: 28% | X: 23% | 2: 48%
+  💬 Como 1907 es favorito incluso fuera (48% de victoria): Como 1907 tiene 64 puntos más de Elo europeo (1749 vs 1813). Ojo: las casas dan al 2 un 50% y el Elo un 37%; el pronóstico mezcla ambos. Con 1.5-1.9 goles esperados, el 1-2 es el marcador más probable de ese signo (9%) y da 1.9 puntos esperados.
+
+Mié 14/10 21:00 (🏆 Champions J2)
+  Roma 1-2 Real Madrid
+  1: 28% | X: 24% | 2: 48%
+  💬 Real Madrid es favorito incluso fuera (48% de victoria): Real Madrid tiene 40 puntos más de Elo europeo (1854 vs 1895). Ojo: las casas dan al 2 un 50% y el Elo un 33%; el pronóstico mezcla ambos. Con 1.4-1.9 goles esperados, el 1-2 es el marcador más probable de ese signo (9%) y da 1.9 puntos esperados.
+
+Mié 14/10 21:00 (🏆 Champions J2)
+  Man City 2-1 PSG
+  1: 46% | X: 24% | 2: 30%
+  💬 Man City parte como favorito en casa (46% de victoria): Man City tiene 62 puntos más de Elo europeo (1985 vs 1923). Ojo: las casas dan al 1 un 44% y el Elo un 57%; el pronóstico mezcla ambos. Con 1.9-1.5 goles esperados, el 2-1 es el marcador más probable de ese signo (9%) y da 1.8 puntos esperados.
+
+Mié 14/10 21:00 (🏆 Champions J2)
+  Bodø/Glimt 1-2 Dortmund
+  1: 30% | X: 23% | 2: 46%
+  💬 Dortmund es favorito incluso fuera (46% de victoria): Dortmund tiene 144 puntos más de Elo europeo (1719 vs 1863). Las casas de apuestas lo ven parecido (1: 31% | X: 23% | 2: 46%). Con 1.5-1.9 goles esperados, el 1-2 es el marcador más probable de ese signo (9%) y da 1.8 puntos esperados.
+
+Mié 14/10 21:00 (🏆 Champions J2)
+  Aston Villa 2-1 Fenerbahçe
+  1: 58% | X: 23% | 2: 19%
+  💬 Aston Villa parte como favorito en casa (58% de victoria): Aston Villa tiene 83 puntos más de Elo europeo (1822 vs 1739). Las casas de apuestas lo ven parecido (1: 58% | X: 23% | 2: 19%). Con 2.0-1.1 goles esperados, el 2-1 es el marcador más probable de ese signo (10%) y da 2.2 puntos esperados.
+
+Mié 14/10 21:00 (🏆 Champions J2)
+  Real Betis 2-1 Porto
+  1: 46% | X: 26% | 2: 28%
+  💬 Real Betis parte como favorito en casa (46% de victoria): aunque Porto tiene 47 puntos más de Elo europeo (1825 vs 1777), jugar en casa lo compensa. Las casas de apuestas lo ven parecido (1: 47% | X: 26% | 2: 28%). Con 1.7-1.3 goles esperados, el 2-1 es el marcador más probable de ese signo (9%) y da 1.9 puntos esperados.
+
+Mié 14/10 21:00 (🏆 Champions J2)
+  Shaktar 1-2 PAE AEK
+  1: 36% | X: 27% | 2: 36%
+  💬 PAE AEK es favorito incluso fuera (36% de victoria): PAE AEK tiene 64 puntos más de Elo europeo (1631 vs 1696). Las casas de apuestas lo ven parecido (1: 36% | X: 28% | 2: 36%). Con 1.4-1.4 goles esperados, el 1-2 es el marcador más probable de ese signo (8%) y da 1.5 puntos esperados.
+
+Mié 14/10 21:00 (🏆 Champions J2)
+  Sl. Bratislava 0-2 Stuttgart
+  1: 10% | X: 16% | 2: 74%
+  💬 Stuttgart es favorito incluso fuera (74% de victoria): Stuttgart tiene 327 puntos más de Elo europeo (1457 vs 1784). Las casas de apuestas lo ven parecido (1: 10% | X: 16% | 2: 74%). Con 0.9-2.7 goles esperados, el 0-2 es el marcador más probable de ese signo (9%) y da 2.7 puntos esperados.
+
+Vie 16/10 21:00 (J9)
+  Deportivo 1-0 Levante
+  1: 46% | X: 27% | 2: 27%
+  💬 Deportivo parte como favorito en casa (46% de victoria): marca 1.5 goles por partido y Levante encaja 2.0 (4.2 tiros a puerta por partido). Las casas de apuestas lo ven parecido (1: 45% | X: 27% | 2: 27%). Con 1.6-1.1 goles esperados, el 1-0 es el marcador más probable de ese signo (9%) y da 1.9 puntos esperados.
+
+Sáb 17/10 14:00 (J9)
+  Espanyol 1-2 Atleti
+  1: 22% | X: 26% | 2: 52%
+  💬 Atleti es favorito incluso fuera (52% de victoria): marca 2.2 goles por partido y Espanyol encaja 1.4 (6.5 tiros a puerta por partido). Las casas de apuestas lo ven parecido (1: 21% | X: 25% | 2: 54%). Con 1.1-1.7 goles esperados, el 1-2 es el marcador más probable de ese signo (10%) y da 2.1 puntos esperados.
+
+Sáb 17/10 16:15 (J9)
+  Villarreal 2-1 Elche
+  1: 65% | X: 20% | 2: 15%
+  💬 Villarreal parte como favorito en casa (65% de victoria): marca 1.6 goles por partido y Elche encaja 2.1 (6.2 tiros a puerta por partido). Las casas de apuestas lo ven parecido (1: 65% | X: 20% | 2: 15%). Con 2.3-1.0 goles esperados, el 2-1 es el marcador más probable de ese signo (10%) y da 2.4 puntos esperados.
+
+Sáb 17/10 18:30 (J9)
+  Real Betis 1-2 Barça
+  1: 17% | X: 19% | 2: 63%
+  💬 Barça es favorito incluso fuera (63% de victoria): marca 4.2 goles por partido y Real Betis encaja 1.1 (8.2 tiros a puerta por partido). Ojo: las casas dan al 2 un 67% y las estadísticas un 54%; el pronóstico mezcla ambos. Con 1.3-2.5 goles esperados, el 1-2 es el marcador más probable de ese signo (9%) y da 2.4 puntos esperados.
+
+Sáb 17/10 21:00 (J9)
+  Valencia 0-1 Athletic
+  1: 31% | X: 29% | 2: 40%
+  💬 Athletic es favorito incluso fuera (40% de victoria): encaja 1.0 goles por partido y Valencia marca 0.8. Ojo: las casas dan al 2 un 44% y las estadísticas un 30%; el pronóstico mezcla ambos. Con 1.2-1.4 goles esperados, el 0-1 es el marcador más probable de ese signo (10%) y da 1.7 puntos esperados.
+
+Dom 18/10 14:00 (J9)
+  Osasuna 2-1 Santander
+  1: 49% | X: 25% | 2: 26%
+  💬 Osasuna parte como favorito en casa (49% de victoria): marca 1.0 goles por partido y Santander encaja 2.9 (4.0 tiros a puerta por partido). Las casas de apuestas lo ven parecido (1: 48% | X: 26% | 2: 27%). Con 1.8-1.2 goles esperados, el 2-1 es el marcador más probable de ese signo (10%) y da 1.9 puntos esperados.
+
+Dom 18/10 16:15 (J9)
+  Celta 1-0 Alavés
+  1: 45% | X: 29% | 2: 26%
+  💬 Celta parte como favorito en casa (45% de victoria): encaja 0.8 goles por partido y Alavés marca 1.5. Las casas de apuestas lo ven parecido (1: 45% | X: 29% | 2: 26%). Con 1.4-1.0 goles esperados, el 1-0 es el marcador más probable de ese signo (12%) y da 1.9 puntos esperados.
+
+Dom 18/10 18:30 (J9)
+  Málaga 1-2 Real Sociedad
+  1: 32% | X: 27% | 2: 41%
+  💬 Real Sociedad es favorito incluso fuera (41% de victoria): marca 1.5 goles por partido y Málaga encaja 1.6 (5.0 tiros a puerta por partido). Ojo: las casas dan al 2 un 44% y las estadísticas un 34%; el pronóstico mezcla ambos. Con 1.3-1.5 goles esperados, el 1-2 es el marcador más probable de ese signo (9%) y da 1.7 puntos esperados.
+
+Dom 18/10 21:00 (J9)
+  Real Madrid 2-0 Sevilla FC
+  1: 76% | X: 16% | 2: 8%
+  💬 Real Madrid parte como favorito en casa (76% de victoria): marca 2.4 goles por partido y Sevilla FC encaja 1.3 (7.1 tiros a puerta por partido). Las casas de apuestas lo ven parecido (1: 76% | X: 15% | 2: 9%). Con 2.6-0.8 goles esperados, el 2-0 es el marcador más probable de ese signo (11%) y da 2.8 puntos esperados.
+
+📊 Puntos esperados esta semana: 60.0
+💶 Cuotas de las casas en 27/28 partidos
+
+📒 Semana pasada: 15 pts (5/8 signos, 0 exactos; el modelo esperaba 16.7)
+🏆 Temporada: 15 pts en 8 partidos (1.88 por partido, 62% de signos)
+
+⚠️ ClubElo caído: Champions con el Elo europeo calculado por el agente
+
+(--prueba: no se envía a Telegram ni se guarda el historial)
+=============== ELO EUROPEO PROPIO ===============
+Champions 2022: HTTPError
+Elo europeo: 33150 partidos de liga, 521 de Champions
+Elo europeo: equipos de Champions sin liga en los datos (10): AC Sparta Praha, FK Crvena Zvezda, FK Kairat, FK Shakhtar Donetsk, GNK Dinamo Zagreb, Paphos FC, Qarabağ Ağdam FK, SK Slavia Praha, Sabah FK, ŠK Slovan Bratislava
+ 1. Arsenal                2010
+ 2. Bayern Munich          1998
+ 3. Man City               1985
+ 4. Barcelona              1967
+ 5. Paris SG               1923
+ 6. Inter                  1905
+ 7. Real Madrid            1895
+ 8. Brighton               1866
+ 9. Dortmund               1863
+10. Liverpool              1860
+11. Roma                   1854
+12. Man United             1843
+13. Sp Lisbon              1843
+14. Brentford              1827
+15. Porto                  1825
+16. PSV Eindhoven          1823
+17. Aston Villa            1822
+18. Benfica                1815
+19. Ath Madrid             1815
+20. Leverkusen             1813
+21. Como                   1813
+22. Juventus               1809
+23. Leeds                  1806
+24. Bournemouth            1802
+25. Chelsea                1798
+26. Napoli                 1795
+27. Milan                  1791
+28. Newcastle              1790
+29. Everton                1786
+30. Stuttgart              1784
+31. Club Brugge            1781
+32. Betis                  1777
+33. St. Gilloise           1776
+34. Nott'm Forest          1767
+35. Lazio                  1766
+36. Monaco                 1761
+37. RB Leipzig             1756
+38. Lens                   1756
+39. Lille                  1755
+40. Crystal Palace         1754
+
+Media de cada liga (inicial -> ahora, equipos de la última temporada):
+  E0    1760 -> 1794  (20 equipos)
+  I1    1690 -> 1709  (20 equipos)
+  D1    1680 -> 1699  (18 equipos)
+  F1    1630 -> 1679  (18 equipos)
+  SP1   1700 -> 1675  (20 equipos)
+  P1    1560 -> 1580  (20 equipos)
+  N1    1560 -> 1569  (21 equipos)
+  E1    1560 -> 1556  (27 equipos)
+  B1    1530 -> 1549  (19 equipos)
+  T1    1520 -> 1546  (21 equipos)
+  SP2   1500 -> 1538  (23 equipos)
+  D2    1520 -> 1522  (20 equipos)
+  G1    1470 -> 1491  (16 equipos)
+  AUT   1480 -> 1486  (13 equipos)
+  I2    1480 -> 1478  (24 equipos)
+  DNK   1460 -> 1474  (14 equipos)
+  F2    1470 -> 1472  (20 equipos)
+  SWZ   1460 -> 1467  (13 equipos)
+  NOR   1430 -> 1448  (19 equipos)
+  SWE   1420 -> 1440  (19 equipos)
+  POL   1420 -> 1436  (21 equipos)
+  SC0   1430 -> 1436  (13 equipos)
+  ROU   1400 -> 1422  (21 equipos)
+Champions 2022: HTTPError
+Elo europeo: 33150 partidos de liga, 521 de Champions
+Elo europeo: equipos de Champions sin liga en los datos (10): AC Sparta Praha, FK Crvena Zvezda, FK Kairat, FK Shakhtar Donetsk, GNK Dinamo Zagreb, Paphos FC, Qarabağ Ağdam FK, SK Slavia Praha, Sabah FK, ŠK Slovan Bratislava
+
+Champions desde la temporada pasada (207 partidos, sin mirar el futuro). Log-loss sin información: 1.013
+  ventaja casa  70 | goles/equipo 1.60 -> log-loss 0.903, signo 61%
+  ventaja casa 100 | goles/equipo 1.60 -> log-loss 0.905, signo 59%
+  ventaja casa  70 | goles/equipo 1.45 -> log-loss 0.907, signo 61%
+  ventaja casa 100 | goles/equipo 1.45 -> log-loss 0.908, signo 59%
+  ventaja casa  40 | goles/equipo 1.60 -> log-loss 0.910, signo 59%
+  ventaja casa  70 | goles/equipo 1.30 -> log-loss 0.911, signo 61%
+  ventaja casa 100 | goles/equipo 1.30 -> log-loss 0.913, signo 59%
+  ventaja casa  40 | goles/equipo 1.45 -> log-loss 0.913, signo 59%
+  ventaja casa  40 | goles/equipo 1.30 -> log-loss 0.918, signo 59%
