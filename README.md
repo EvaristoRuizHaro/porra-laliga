@@ -18,9 +18,17 @@
 Cada lunes por la mañana (hora de España) llega un mensaje así:
 
 ```text
-⚽ PORRA 05/10 - 11/10
+⚽ PORRA 12/10 - 18/10 (LaLiga + Champions)
 
-Sáb 10/10 18:30 (J8)
+Mar 13/10 21:00 (🏆 Champions J2)
+  Galatasaray 1-3 Barça
+  1: 13% | X: 15% | 2: 72%
+  💬 Barça es favorito incluso fuera (72% de victoria): Barça tiene 232 puntos
+  más de Elo europeo (1735 vs 1967). Ojo: las casas dan al 2 un 75% y el Elo un
+  61%; el pronóstico mezcla ambos. Con 1.2-3.0 goles esperados, el 1-3 es el
+  marcador más probable de ese signo (8%) y da 2.6 puntos esperados.
+
+Sáb 17/10 18:30 (J9)
   Barça 2-0 Getafe
   1: 78% | X: 16% | 2: 7%
   💬 Barça parte como favorito en casa (78% de victoria): encaja 1.0 goles por
@@ -35,7 +43,7 @@ Sáb 10/10 18:30 (J8)
 🏆 Temporada: 118 pts en 60 partidos (1.97 por partido, 53% de signos)
 ```
 
-Para cada partido: **marcador recomendado**, **probabilidades 1X2**, **por qué** y **qué dicen las casas de apuestas**. Al final, el **balance real** de la semana pasada y de la temporada.
+Para cada partido (de LaLiga y, las semanas que hay, de Champions): **marcador recomendado**, **probabilidades 1X2**, **por qué** y **qué dicen las casas de apuestas**. Al final, el **balance real** de la semana pasada y de la temporada.
 
 ## 🧠 Cómo funciona
 
@@ -43,7 +51,7 @@ Para cada partido: **marcador recomendado**, **probabilidades 1X2**, **por qué*
    | Fuente | Qué aporta |
    |---|---|
    | [football-data.org](https://www.football-data.org) | Calendario de la semana (LaLiga y Champions) y resultados al momento |
-   | [football-data.co.uk](https://www.football-data.co.uk) | Resultados, **tiros a puerta** y cuotas de esta temporada y la pasada |
+   | [football-data.co.uk](https://www.football-data.co.uk) | Resultados, **tiros a puerta** y cuotas de esta temporada y la pasada; resultados de 23 ligas europeas para el Elo europeo propio |
    | [ClubElo](http://clubelo.com) | **Elo** de cada club (también de Segunda, para los recién ascendidos, y de toda Europa, para la Champions). Si está caído, el agente calcula su propio Elo con los resultados de Primera y Segunda |
    | [The Odds API](https://the-odds-api.com) *(opcional)* | **Cuotas** de los partidos de la semana (LaLiga y Champions) |
 
@@ -100,15 +108,18 @@ python backtest.py      # repite el backtest con los CSV de football-data.co.uk
 | Archivo | Qué hace |
 |---|---|
 | `porra.py` | Punto de entrada: calcula la semana, predice, guarda el historial y envía a Telegram |
-| `datos.py` | Descarga resultados, tiros, cuotas y Elo de las distintas fuentes |
-| `elo.py` | Calcula un Elo propio con Primera y Segunda si ClubElo no responde |
+| `datos.py` | Descarga resultados, tiros, cuotas y Elo de las distintas fuentes (LaLiga y Champions) |
+| `elo.py` | Calcula un Elo propio a partir de resultados (Primera y Segunda, o las ligas que se le pasen) |
+| `champions.py` | Pronósticos de Champions: Elo europeo → goles esperados, mezcla con cuotas, emparejado de nombres |
+| `elo_europa.py` | Elo propio de los clubes de Europa (ligas + cruces de Champions) y su evaluación |
 | `nombres.py` | Traduce los nombres de los equipos de cada fuente a uno común |
 | `modelo.py` | Modelo de Poisson con Elo, tiros, Dixon-Coles y cuotas; elige el mejor marcador |
 | `explicacion.py` | Genera las frases que justifican cada pronóstico |
-| `historial.py` | Guarda pronósticos y resultados en `historial.csv` y calcula el balance |
+| `historial.py` | Guarda pronósticos y resultados en `historial.csv` (columna `competicion`: PD/CL) y calcula el balance |
+| `elo_europa.csv` | Última copia de ClubElo, por si se cae (la guarda el propio agente) |
 | `backtest.py` | Evalúa el modelo en temporadas pasadas |
 | `obtener_chat_id.py` | Utilidad para averiguar tu `chat_id` de Telegram |
-| `.github/workflows/porra.yml` | Ejecución automática cada lunes |
+| `.github/workflows/porra.yml` | Ejecución automática cada lunes (y modo prueba al lanzarlo a mano) |
 
 ## 🚀 Ponerlo en marcha
 
@@ -116,7 +127,7 @@ python backtest.py      # repite el backtest con los CSV de football-data.co.uk
 
 - **football-data.org**: regístrate en [football-data.org/client/register](https://www.football-data.org/client/register) y te llega la clave por email.
 - **Bot de Telegram**: crea uno con [@BotFather](https://t.me/BotFather) (`/newbot`) y guarda el token.
-- *(Opcional)* **The Odds API**: regístrate en [the-odds-api.com](https://the-odds-api.com) (plan gratis, 500 créditos al mes; el agente gasta 2 por semana). Sin ella se usan las cuotas de football-data.co.uk, que no siempre están el lunes.
+- *(Muy recomendable)* **The Odds API**: regístrate en [the-odds-api.com](https://the-odds-api.com) (plan gratis, 500 créditos al mes; el agente gasta 2 por semana, 4 si hay Champions). Sin ella se usan las cuotas de football-data.co.uk, que no siempre están el lunes, y la Champions va solo con el Elo.
 
 ### 2. En local
 
@@ -141,13 +152,18 @@ Y lanza la porra:
 python porra.py --prueba       # solo muestra el mensaje (no envía ni guarda historial)
 python porra.py                # semana actual
 python porra.py 2026-10-12     # cualquier otra semana (vale cualquier día de ella)
+python porra.py --prueba --elo-propio   # Champions con el Elo europeo propio aunque ClubElo funcione
+python elo_europa.py           # ranking del Elo europeo, media de cada liga y su acierto en Champions
 ```
 
 ### 3. Automático con GitHub Actions
 
 1. Haz un fork de este repositorio.
 2. En **Settings → Secrets and variables → Actions** añade `FOOTBALL_DATA_KEY`, `TELEGRAM_TOKEN`, `TELEGRAM_CHAT_ID` y, si la tienes, `ODDS_API_KEY`.
-3. Listo: se ejecuta cada lunes por la mañana (hora de Madrid, con el cambio de hora contemplado y varios intentos por si GitHub se salta alguno) y sube `historial.csv` al repositorio. Para probarlo al momento, entra en **Actions → Porra semanal → Run workflow**.
+3. Listo: se ejecuta cada lunes por la mañana (hora de Madrid, con el cambio de hora contemplado y varios intentos por si GitHub se salta alguno) y sube `historial.csv` al repositorio. Para lanzarlo al momento, entra en **Actions → Porra semanal → Run workflow**:
+   - Sin marcar nada: envía la porra a Telegram y guarda el historial.
+   - Con **`prueba`** marcado: no envía nada; deja la salida (mensaje, ranking y evaluación del Elo europeo) en `salida.txt` de la rama `salida-prueba`.
+   - Con **`elo_propio`** marcado: en Champions usa el Elo europeo propio aunque ClubElo funcione.
 
 > 💡 ¿Lo quieres para tu grupo de amigos? Mete el bot en el grupo, escribe algo allí y usa como `TELEGRAM_CHAT_ID` el id del grupo (empieza por `-`).
 
