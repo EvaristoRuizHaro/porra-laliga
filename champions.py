@@ -17,7 +17,7 @@ from nombres import _normalizar
 
 CONFIG_CHAMPIONS = {
     "ventaja_casa_elo": 70,     # puntos Elo que vale jugar en casa en Europa
-    "goles_equipo": 1.45,       # goles por equipo en un partido igualado (Champions ~3 por partido)
+    "goles_equipo": 1.6,        # goles por equipo en un partido igualado (ajustado con elo_europa.py)
     "peso_mercado": 0.9,        # 0 = solo Elo, 1 = solo cuotas
     "elo_desconocido": 1600,    # Elo de un equipo que no encontramos (los más flojos de la fase liga)
 }
