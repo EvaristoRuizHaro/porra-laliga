@@ -215,15 +215,33 @@ def _elo_clubelo(dia):
     return res
 
 
+ELO_EUROPA_CACHE = "elo_europa.csv"   # última tabla buena de ClubElo, por si se cae
+
+
 def elo_europa(dia):
-    """Elo de ClubElo de todos los clubes europeos, con su nombre de ClubElo: {"Bayern": 1990, ...}."""
+    """Elo de ClubElo de todos los clubes europeos, con su nombre de ClubElo: {"Bayern": 1990, ...}.
+    Cada vez que ClubElo responde se guarda una copia en elo_europa.csv; si está caído, se usa
+    esa copia (el Elo cambia poco de una semana a otra). Devuelve (elos, fecha_de_los_datos)."""
     res = {}
     for f in _clubelo(dia):
         try:
             res.setdefault(f["Club"], float(f["Elo"]))
         except (KeyError, TypeError, ValueError):
             continue
-    return res
+    if res:
+        with open(ELO_EUROPA_CACHE, "w", newline="", encoding="utf-8") as fh:
+            w = csv.writer(fh)
+            w.writerow(["club", "elo", "fecha"])
+            w.writerows([club, f"{elo:.0f}", dia.isoformat()] for club, elo in res.items())
+        return res, dia
+    try:
+        with open(ELO_EUROPA_CACHE, newline="", encoding="utf-8") as fh:
+            filas = list(csv.DictReader(fh))
+        if filas:
+            return {f["club"]: float(f["elo"]) for f in filas}, date.fromisoformat(filas[0]["fecha"])
+    except (OSError, KeyError, ValueError):
+        pass
+    return {}, None
 
 
 def _elo_calculado(dia, jugados):
@@ -263,10 +281,16 @@ def eventos_odds_api(competicion="PD"):
     [{"inicio": datetime, "local": "...", "visitante": "...", "cuotas": {...}}, ...]"""
     clave = os.getenv("ODDS_API_KEY")
     if not clave:
-        return []
+        raise RuntimeError("falta ODDS_API_KEY")
     r = requests.get(ODDS_API.format(deporte=DEPORTE_ODDS[competicion]), timeout=30, params={
         "apiKey": clave, "regions": "eu", "markets": "h2h,totals", "oddsFormat": "decimal"})
-    r.raise_for_status()
+    if r.status_code != 200:
+        # 401 = clave mal o créditos agotados; 422 = parámetros; 429 = demasiadas peticiones
+        try:
+            detalle = r.json().get("error_code") or r.json().get("message", "")
+        except ValueError:
+            detalle = ""
+        raise RuntimeError(f"HTTP {r.status_code} {detalle}".strip())
     print(f"The Odds API: quedan {r.headers.get('x-requests-remaining', '?')} créditos este mes")
     res = []
     for ev in r.json():
@@ -288,6 +312,8 @@ def eventos_odds_api(competicion="PD"):
 
 
 def _cuotas_odds_api():
+    if not os.getenv("ODDS_API_KEY"):
+        return {}
     return {(canonico(e["local"]), canonico(e["visitante"])): e["cuotas"]
             for e in eventos_odds_api("PD")}
 

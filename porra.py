@@ -86,14 +86,19 @@ def predecir_laliga(partidos, jugados, corte):
 
 def predecir_champions(partidos, corte):
     """Pronósticos de Champions con el Elo europeo + cuotas. Devuelve {id: (pred, justificación, hay_cuotas)}."""
-    elos = datos.elo_europa(corte)
+    elos, fecha_elo = datos.elo_europa(corte)
     if not elos:
-        datos._avisar("Elo europeo no disponible: en Champions solo cuentan las cuotas")
+        datos._avisar("ClubElo caído y sin copia guardada: en Champions solo cuentan las cuotas")
+    elif fecha_elo < corte - timedelta(days=3):
+        datos._avisar(f"ClubElo caído: Elo europeo de la copia del {fecha_elo:%d/%m}")
     try:
-        cuotas = champions.emparejar_cuotas(partidos, datos.eventos_odds_api("CL"))
-        print(f"Cuotas de Champions: {len(cuotas)}/{len(partidos)} partidos")
+        eventos = datos.eventos_odds_api("CL")
+        cuotas = champions.emparejar_cuotas(partidos, eventos)
+        print(f"Cuotas de Champions: {len(eventos)} en The Odds API, {len(cuotas)}/{len(partidos)} emparejadas")
+        if not eventos:
+            datos._avisar("The Odds API no devolvió partidos de Champions")
     except Exception as e:
-        print(f"Cuotas de Champions no disponibles ({e.__class__.__name__})")
+        datos._avisar(f"Cuotas de Champions no disponibles ({e})")
         cuotas = {}
     res, sin_datos = {}, []
     for p in partidos:
@@ -106,9 +111,12 @@ def predecir_champions(partidos, corte):
                     print(f"⚠️  Sin Elo para '{nombre}' (añádelo a ALIAS_ELO en champions.py)")
         if c is None and (el is None or ev is None):
             sin_datos.append(f"{local}-{visit}")
-        res[p["id"]] = (pred, justificar_champions(local, visit, pred, el, ev), c is not None)
+            porque = "⚠️ SIN DATOS (ni Elo ni cuotas): pronóstico por defecto, decide tú."
+        else:
+            porque = justificar_champions(local, visit, pred, el, ev)
+        res[p["id"]] = (pred, porque, c is not None)
     if sin_datos:
-        datos._avisar("Champions sin Elo ni cuotas (pronóstico a ciegas): " + ", ".join(sin_datos))
+        datos._avisar(f"Champions sin Elo ni cuotas en {len(sin_datos)}/{len(partidos)} partidos")
     return res
 
 
