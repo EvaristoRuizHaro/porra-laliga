@@ -15,12 +15,16 @@ def _multiplicador(diferencia):
     return 1 if d <= 1 else 1.5 if d == 2 else (11 + d) / 8
 
 
-def calcular(partidos, hasta, inicial=None, defecto=1500, sin_liga=("EUR",)):
+def calcular(partidos, hasta, inicial=None, defecto=1500, sin_liga=("EUR",), inicial_equipo=None,
+             al_partido=None):
     """Elo de cada equipo con los partidos jugados antes de 'hasta'.
     partidos: dicts con fecha, local, visitante, gl, gv y 'liga' (por defecto 'SP1').
     inicial: Elo con el que aparece un equipo nuevo según su liga (por defecto INICIAL).
     sin_liga: 'ligas' que no son ligas (p. ej. la Champions): sus partidos no cambian la liga
-    del equipo ni se regresan a ninguna media; sirven de puente entre ligas."""
+    del equipo ni se regresan a ninguna media; sirven de puente entre ligas.
+    inicial_equipo: {equipo: Elo} para equipos concretos (los que no tienen liga en los datos).
+    al_partido(p, elo_local, elo_visitante): se llama antes de actualizar cada partido."""
+    inicial_equipo = inicial_equipo or {}
     inicial = inicial or INICIAL
     elo, liga_de, temporada = {}, {}, None
     for p in sorted(partidos, key=lambda p: p["fecha"]):
@@ -39,10 +43,12 @@ def calcular(partidos, hasta, inicial=None, defecto=1500, sin_liga=("EUR",)):
         liga = p.get("liga", "SP1")
         for e in (p["local"], p["visitante"]):
             if e not in elo:
-                elo[e] = inicial.get(liga, defecto)
+                elo[e] = inicial_equipo.get(e, inicial.get(liga, defecto))
                 liga_de[e] = liga
             elif liga not in sin_liga:
                 liga_de[e] = liga          # ascensos y descensos
+        if al_partido:
+            al_partido(p, elo[p["local"]], elo[p["visitante"]])
         ventaja = 0 if p.get("neutral") else VENTAJA_CASA
         esperado = 1 / (1 + 10 ** ((elo[p["visitante"]] - elo[p["local"]] - ventaja) / 400))
         real = 1 if p["gl"] > p["gv"] else 0.5 if p["gl"] == p["gv"] else 0

@@ -97,6 +97,9 @@ def justificar_champions(local, visitante, pred, elo_local, elo_visit):
             mejor = local if dif > 0 else visitante
             motivo = (f"{mejor} tiene {abs(dif):.0f} puntos más de Elo europeo "
                       f"({elo_local:.0f} vs {elo_visit:.0f})")
+            if dif < 0 and a > b:   # favorito el local con menos Elo: lo decide el campo
+                motivo = (f"aunque {visitante} tiene {-dif:.0f} puntos más de Elo europeo "
+                          f"({elo_visit:.0f} vs {elo_local:.0f}), jugar en casa lo compensa")
 
     if a > b:
         frase1 = f"{local} parte como favorito en casa ({pred['p1']:.0%} de victoria): {motivo}."

@@ -35,7 +35,18 @@ LIGAS_EXTRA = {"AUT": 1480, "SWZ": 1460, "DNK": 1460, "NOR": 1430, "SWE": 1420,
                "POL": 1420, "ROU": 1400}
 CSV_EXTRA = "https://www.football-data.co.uk/new/{codigo}.csv"
 CHAMPIONS = "EUR"
-ELO_SIN_LIGA = 1480   # equipo de Champions de una liga que no tenemos (Kazajistán, Serbia...)
+ELO_SIN_LIGA = 1480   # equipo de Champions de una liga que no tenemos (Kazajistán, Azerbaiyán...)
+# Clubes habituales de Europa cuyas ligas no tenemos: punto de partida aproximado
+# (después lo corrigen sus partidos de Champions). Forma normalizada del nombre -> Elo
+SIN_LIGA = {
+    "sk slavia praha": 1640, "ac sparta praha": 1610, "fc viktoria plzen": 1570,
+    "fc shakhtar donetsk": 1620, "fc dynamo kyiv": 1590, "gnk dinamo zagreb": 1600,
+    "hnk rijeka": 1500, "fk crvena zvezda": 1600, "fk partizan": 1520,
+    "ferencvarosi tc": 1560, "qarabag agdam fk": 1560, "qarabag fk": 1560,
+    "sk slovan bratislava": 1500, "pfc ludogorets 1945": 1540, "maccabi tel aviv fc": 1530,
+    "maccabi haifa fc": 1520, "apoel fc": 1480, "pafos fc": 1520, "fc midtjylland": 1580,
+    "fc sheriff tiraspol": 1460, "fc kairat": 1460, "sabah fk": 1460, "fk bodo glimt": 1660,
+}
 
 # football-data.org escribe algunos equipos muy distinto que football-data.co.uk.
 # Forma normalizada -> nombre en football-data.co.uk (si no aparece, se busca por parecido)
@@ -151,7 +162,7 @@ def clave(equipo, conocidos):
 # ------------------------------------------------------------ cálculo
 
 
-def calcular(hoy):
+def calcular(hoy, al_partido=None):
     """Elo de los clubes de Europa con todo lo jugado antes de 'hoy'.
     Devuelve (elo, buscar) donde buscar(equipo_de_football_data_org) -> Elo o None."""
     ligas, fallos = _ligas(hoy)
@@ -171,8 +182,12 @@ def calcular(hoy):
             cache[n] = clave(equipo, conocidos)
         return cache[n]
 
-    europa = []
+    europa, inicial_equipo = [], {}
     for p in _champions(hoy):
+        for eq in (p["local_api"], p["visitante_api"]):
+            n = _normalizar(eq.get("name", ""))
+            if n in SIN_LIGA and nombre(eq) not in conocidos:
+                inicial_equipo[nombre(eq)] = SIN_LIGA[n]
         europa.append({**p, "local": nombre(p["local_api"]), "visitante": nombre(p["visitante_api"])})
     print(f"Elo europeo: {len(ligas)} partidos de liga, {len(europa)} de Champions")
     if not europa:
@@ -180,7 +195,8 @@ def calcular(hoy):
 
     inicial = {**LIGAS, **LIGAS_EXTRA}
     tabla = elo_calc.calcular(ligas + europa, hoy, inicial=inicial, defecto=ELO_SIN_LIGA,
-                              sin_liga=(CHAMPIONS,))
+                              sin_liga=(CHAMPIONS,), inicial_equipo=inicial_equipo,
+                              al_partido=al_partido)
 
     def buscar(equipo):
         return tabla.get(nombre(equipo))
@@ -188,21 +204,66 @@ def calcular(hoy):
     return tabla, buscar
 
 
+def evaluar(hoy, desde, ventajas=(40, 70, 100), goles=(1.3, 1.45, 1.6)):
+    """¿Acierta este Elo en Champions? Para cada partido de Champions desde 'desde', pronostica
+    con el Elo que había justo antes (sin mirar el futuro) y mide log-loss 1X2 y acierto,
+    probando varias ventajas de campo y goles por equipo. Devuelve una lista ordenada
+    de (log-loss, acierto, ventaja, goles) y (n, log-loss sin información)."""
+    import math
+    from champions import lambdas_elo
+    from modelo import CONFIG, matriz, probabilidades_1x2
+    partidos = []
+
+    def al_partido(p, el, ev):
+        if p["liga"] == CHAMPIONS and p["fecha"] >= desde:
+            real = 0 if p["gl"] > p["gv"] else 1 if p["gl"] == p["gv"] else 2
+            partidos.append((el, ev, p.get("neutral", False), real))
+
+    calcular(hoy, al_partido)
+    if not partidos:
+        return None
+    n = len(partidos)
+    frec = [sum(r == i for *_, r in partidos) / n for i in range(3)]
+    base = -sum(math.log(frec[r]) for *_, r in partidos) / n
+    res = []
+    for v in ventajas:
+        for g in goles:
+            ll = ac = 0
+            for el, ev, neutral, real in partidos:
+                pr = probabilidades_1x2(matriz(*lambdas_elo(
+                    el, ev, neutral, cfg={"ventaja_casa_elo": v, "goles_equipo": g}), CONFIG["rho"]))
+                ll -= math.log(max(pr[real], 1e-9))
+                ac += max(range(3), key=lambda i: pr[i]) == real
+            res.append((ll / n, ac / n, v, g))
+    return sorted(res), (n, base)
+
+
 if __name__ == "__main__":
-    # python elo_europa.py -> los 40 mejores y la media de cada liga
-    tabla, _ = calcular(date.today())
+    # python elo_europa.py -> los 40 mejores, la media de cada liga y cuánto acierta en Champions
+    hoy = date.today()
+    tabla, _ = calcular(hoy)
     for i, (e, v) in enumerate(sorted(tabla.items(), key=lambda t: -t[1])[:40], 1):
         print(f"{i:2}. {e:22} {v:.0f}")
-    ligas, _ = _ligas(date.today())
+    ligas, _ = _ligas(hoy)
     ultima = {}
     for p in sorted(ligas, key=lambda p: p["fecha"]):
         for k in ("local", "visitante"):
             ultima[p[k]] = p["liga"]
-    print("\nMedia de cada liga (inicial -> ahora):")
+    print("\nMedia de cada liga (inicial -> ahora, equipos de la última temporada):")
+    reciente = inicio_temporada(hoy).replace(year=inicio_temporada(hoy).year - 1)
     medias = {}
-    for e, liga in ultima.items():
-        if e in tabla:
-            medias.setdefault(liga, []).append(tabla[e])
+    for p in ligas:
+        if p["fecha"] >= reciente:
+            for k in ("local", "visitante"):
+                if p[k] in tabla and ultima[p[k]] == p["liga"]:
+                    medias.setdefault(p["liga"], {})[p[k]] = tabla[p[k]]
     inicial = {**LIGAS, **LIGAS_EXTRA}
-    for liga, v in sorted(medias.items(), key=lambda t: -sum(t[1]) / len(t[1])):
-        print(f"  {liga:4} {inicial.get(liga, 0):5} -> {sum(v) / len(v):.0f}  ({len(v)} equipos)")
+    for liga, v in sorted(medias.items(), key=lambda t: -sum(t[1].values()) / len(t[1])):
+        print(f"  {liga:4} {inicial.get(liga, 0):5} -> {sum(v.values()) / len(v):.0f}  ({len(v)} equipos)")
+    r = evaluar(hoy, date(inicio_temporada(hoy).year - 1, 7, 1))
+    if r:
+        pruebas, (n, base) = r
+        print(f"\nChampions desde la temporada pasada ({n} partidos, sin mirar el futuro)."
+              f" Log-loss sin información: {base:.3f}")
+        for ll, ac, v, g in pruebas:
+            print(f"  ventaja casa {v:3} | goles/equipo {g:.2f} -> log-loss {ll:.3f}, signo {ac:.0%}")
